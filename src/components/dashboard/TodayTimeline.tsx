@@ -152,7 +152,7 @@ export function TodayTimeline({ theme = "glass" }: TodayTimelineProps) {
   const [filter, setFilter] = useState("all");
 
   return (
-    <div className={cn("relative overflow-hidden panel-card", isGlass && "p-1")}>
+    <div className="relative overflow-hidden panel-card">
       {isGlass && (
         <div className="pointer-events-none absolute right-0 top-8 h-48 w-24 bg-gradient-to-b from-cyan-400/20 via-blue-500/10 to-transparent blur-2xl" />
       )}

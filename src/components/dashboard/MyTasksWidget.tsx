@@ -83,7 +83,7 @@ export function MyTasksWidget({ theme = "glass" }: MyTasksWidgetProps) {
   const myTasks = tasks.filter((t) => t.status !== "completed").slice(0, 3);
 
   return (
-    <div className={cn("panel-card", isGlass && "p-1")}>
+    <div className="panel-card">
       <div className="mb-2 flex items-center justify-between">
         <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
           My Tasks

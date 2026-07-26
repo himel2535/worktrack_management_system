@@ -26,7 +26,7 @@ export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
   const isGlass = theme === "glass";
 
   return (
-    <div className={cn("panel-card", isGlass && "p-1")}>
+    <div className="panel-card">
       <h3 className={cn(isGlass ? "panel-title-glass" : "panel-title")}>
         Today&apos;s Summary
       </h3>

@@ -61,7 +61,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
   }, []);
 
   return (
-    <div className={cn("panel-card", isGlass && "p-1")}>
+    <div className="panel-card">
       <div className="mb-2 flex items-center justify-between">
         <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
           Current Work
@@ -213,27 +213,21 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#059669] py-2.5 text-sm font-medium text-white hover:bg-[#047857]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-sky-400/35 bg-sky-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-sky-400/50 hover:bg-blue-600/55 hover:text-white"
         >
           <Pencil className="h-4 w-4" />
           Submit Update
         </button>
         <button
           type="button"
-          className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-lg border border-orange-300 py-2.5 text-sm font-medium text-orange-400 hover:bg-orange-500/10",
-            isGlass ? "bg-transparent" : "bg-white hover:bg-orange-50"
-          )}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-amber-400/35 bg-amber-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-amber-400/50 hover:bg-amber-600/55 hover:text-white"
         >
           <Coffee className="h-4 w-4" />
           Take Break
         </button>
         <button
           type="button"
-          className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-300 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10",
-            isGlass ? "bg-transparent" : "bg-white hover:bg-red-50"
-          )}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-rose-400/35 bg-rose-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-rose-400/50 hover:bg-red-600/55 hover:text-white"
         >
           <Square className="h-4 w-4" />
           Stop Work

@@ -37,6 +37,22 @@ function formatTime(seconds: number): string {
   return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
+const quickActionTones = {
+  emerald:
+    "border-emerald-400/35 bg-emerald-400/30 hover:bg-emerald-600/55 hover:border-emerald-400/50",
+  amber:
+    "border-amber-400/35 bg-amber-400/30 hover:bg-amber-600/55 hover:border-amber-400/50",
+  sky: "border-sky-400/35 bg-sky-400/30 hover:bg-blue-600/55 hover:border-sky-400/50",
+  rose: "border-rose-400/35 bg-rose-400/30 hover:bg-red-600/55 hover:border-rose-400/50",
+} as const;
+
+const quickActions = [
+  { label: "Start Work", icon: Play, tone: "emerald" as const },
+  { label: "Take Break", icon: Coffee, tone: "amber" as const },
+  { label: "Submit Update", icon: Send, tone: "sky" as const },
+  { label: "Stop Work", icon: Square, tone: "rose" as const },
+];
+
 export default function MyWorkPage() {
   const [countdown, setCountdown] = useState(parseTime(activeWorkSession.nextUpdateDueIn));
 
@@ -142,22 +158,15 @@ export default function MyWorkPage() {
           <div className="panel-card">
             <h3 className="panel-title">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-2">
-              <Button className="h-auto flex-col gap-1 bg-emerald-600 py-3 hover:bg-emerald-700">
-                <Play className="h-5 w-5" />
-                <span className="text-xs">Start Work</span>
-              </Button>
-              <Button variant="outline" className="h-auto flex-col gap-1 border-orange-300 py-3 text-orange-600 hover:bg-orange-50">
-                <Coffee className="h-5 w-5" />
-                <span className="text-xs">Take Break</span>
-              </Button>
-              <Button variant="outline" className="h-auto flex-col gap-1 border-blue-300 py-3 text-blue-600 hover:bg-blue-50">
-                <Send className="h-5 w-5" />
-                <span className="text-xs">Submit Update</span>
-              </Button>
-              <Button variant="outline" className="h-auto flex-col gap-1 border-red-300 py-3 text-red-600 hover:bg-red-50">
-                <Square className="h-5 w-5" />
-                <span className="text-xs">Stop Work</span>
-              </Button>
+              {quickActions.map(({ label, icon: Icon, tone }) => (
+                <Button
+                  key={label}
+                  className={`h-auto flex-col gap-1 rounded-2xl border py-3 text-white transition-colors hover:text-white focus-visible:ring-white/20 ${quickActionTones[tone]}`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="text-xs">{label}</span>
+                </Button>
+              ))}
             </div>
           </div>
 
