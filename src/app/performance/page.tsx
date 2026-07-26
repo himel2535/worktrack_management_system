@@ -176,7 +176,7 @@ export default function PerformancePage() {
         <div className="panel-card">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="panel-title mb-0">Points History</h3>
-            <button className="text-xs text-emerald-600 hover:underline">View All</button>
+            <Button variant="glass" size="xs">View All</Button>
           </div>
           <div className="space-y-2">
             {pointHistory.map((item) => (
@@ -208,7 +208,7 @@ export default function PerformancePage() {
               </div>
             ))}
           </div>
-          <Button variant="outline" className="mt-2 w-full gap-2">
+          <Button variant="glass" className="mt-2 w-full gap-2">
             View Detailed Report
             <ChevronRight className="h-4 w-4" />
           </Button>

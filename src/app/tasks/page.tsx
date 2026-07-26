@@ -70,20 +70,10 @@ export default function TasksPage() {
         <div className={`${selectedTask ? "lg:col-span-8" : "lg:col-span-12"} transition-all`}>
           <div className="panel-card">
             <Tabs defaultValue="my-tasks">
-              <div className="border-b border-white/10 px-3.5 pt-3">
+              <div className="border-b border-white/10 px-3.5 pb-2 pt-3">
                 <TabsList variant="line" className="h-auto gap-2 p-0">
-                  <TabsTrigger
-                    value="my-tasks"
-                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
-                  >
-                    My Tasks
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="completed"
-                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
-                  >
-                    Completed Tasks
-                  </TabsTrigger>
+                  <TabsTrigger value="my-tasks">My Tasks</TabsTrigger>
+                  <TabsTrigger value="completed">Completed Tasks</TabsTrigger>
                 </TabsList>
               </div>
 
@@ -116,7 +106,7 @@ export default function TasksPage() {
                     <SelectItem value="deadline">Deadline</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
+                <Button variant="glass" size="icon"><Filter className="h-4 w-4" /></Button>
               </div>
 
               <TabsContent value="my-tasks" className="m-0">

@@ -108,7 +108,7 @@ export default function HourlyUpdatesPage() {
             </div>
 
             <div className="mt-3 text-center">
-              <Button variant="outline" className="gap-2">
+              <Button variant="glass" className="gap-2">
                 View Tomorrow&apos;s Schedule
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -152,7 +152,7 @@ export default function HourlyUpdatesPage() {
             footer={
               <div className="flex items-center justify-between">
                 <span className="text-sm text-white/50">Need Help?</span>
-                <Button variant="outline" size="sm">View Help Center</Button>
+                <Button variant="glass" size="sm">View Help Center</Button>
               </div>
             }
           />

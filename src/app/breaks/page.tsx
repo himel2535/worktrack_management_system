@@ -182,10 +182,10 @@ export default function BreaksPage() {
           <div className="panel-card">
             <h3 className="panel-title">Monthly Break Overview</h3>
             <AreaChart data={monthlyBreakData} />
-            <button className="mt-2 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
+            <Button variant="glass" size="sm" className="mt-2 gap-1">
               View Full Report
               <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

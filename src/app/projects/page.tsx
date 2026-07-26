@@ -87,20 +87,10 @@ export default function ProjectsPage() {
         <div className="lg:col-span-8">
           <div className="panel-card">
             <Tabs defaultValue="my-projects">
-              <div className="border-b border-white/10 px-3.5 pt-3">
+              <div className="border-b border-white/10 px-3.5 pb-2 pt-3">
                 <TabsList variant="line" className="h-auto gap-2 p-0">
-                  <TabsTrigger
-                    value="my-projects"
-                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
-                  >
-                    My Projects
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="archived"
-                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
-                  >
-                    Archived Projects
-                  </TabsTrigger>
+                  <TabsTrigger value="my-projects">My Projects</TabsTrigger>
+                  <TabsTrigger value="archived">Archived Projects</TabsTrigger>
                 </TabsList>
               </div>
 
@@ -230,7 +220,7 @@ export default function ProjectsPage() {
                 );
               })}
             </div>
-            <Button variant="outline" className="mt-2 w-full">View All Activity</Button>
+            <Button variant="glass" className="mt-2 w-full">View All Activity</Button>
           </div>
         </div>
       </div>

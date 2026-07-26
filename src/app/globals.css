@@ -132,6 +132,10 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    @apply cursor-pointer;
+  }
 }
 
 @layer components {

@@ -135,7 +135,7 @@ export default function AttendancePage() {
                     <SelectItem value="late">Late</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="glass" size="sm" className="gap-2">
                   <Download className="h-4 w-4" />
                   Export
                 </Button>
@@ -214,20 +214,20 @@ export default function AttendancePage() {
                 </div>
               ))}
             </div>
-            <button className="mt-2 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
+            <Button variant="glass" size="sm" className="mt-2 gap-1">
               View Punctuality Report
               <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
 
           <GuidelinesCard
             title="Attendance Rules"
             items={attendanceRules}
             footer={
-              <button className="flex items-center gap-1 text-sm text-emerald-600 hover:underline">
+              <Button variant="glass" size="sm" className="gap-1">
                 View All Rules
                 <ChevronRight className="h-4 w-4" />
-              </button>
+              </Button>
             }
           />
         </div>

@@ -149,7 +149,7 @@ export default function MyWorkPage() {
               </div>
             </div>
             <ProgressBar value={activeWorkSession.updateProgress} className="mt-2" />
-            <Button variant="outline" className="mt-2 w-full gap-2">
+            <Button variant="glass" className="mt-2 w-full gap-2">
               <History className="h-4 w-4" />
               Session History
             </Button>
