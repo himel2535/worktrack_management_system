@@ -123,7 +123,7 @@ export default function HourlyUpdatesPage() {
               data={todayScoreData}
               centerValue={`+${hourlyUpdateStats.netPoints}`}
               centerLabel="Net Points"
-              height={160}
+              height={180}
             />
             <div className="mt-2 grid grid-cols-2 gap-2 text-center">
               <div className="rounded-lg bg-white/5 p-2">

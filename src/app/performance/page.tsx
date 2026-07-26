@@ -58,7 +58,7 @@ export default function PerformancePage() {
             <GaugeChart score={performanceStats.overallScore} />
             <p className="mt-1.5 text-lg font-semibold text-white">{performanceStats.overallStatus}</p>
             <p className="text-xs text-white/50">Keep up the great work!</p>
-            <div className="mt-1.5 flex items-center gap-1 text-sm text-emerald-600">
+            <div className="mt-1.5 flex items-center gap-1 text-sm font-semibold text-emerald-400">
               <TrendingUp className="h-4 w-4" />
               {performanceStats.trend}
             </div>
@@ -90,15 +90,15 @@ export default function PerformancePage() {
         <h3 className="panel-title">Total Points</h3>
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <p className="text-2xl font-bold text-emerald-600">+{weekPoints}</p>
+            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{weekPoints}</p>
             <p className="text-sm text-white/50">This Week</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-emerald-600">+{monthPoints}</p>
+            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{monthPoints}</p>
             <p className="text-sm text-white/50">This Month</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-emerald-600">+{allTimePoints}</p>
+            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{allTimePoints}</p>
             <p className="text-sm text-white/50">All Time</p>
           </div>
         </div>

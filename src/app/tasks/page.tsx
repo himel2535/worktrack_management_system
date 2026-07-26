@@ -127,7 +127,7 @@ export default function TasksPage() {
                     {tasks.filter((t) => t.status !== "completed").map((task) => (
                       <TableRow
                         key={task.id}
-                        className={`cursor-pointer ${selectedTask?.id === task.id ? "bg-emerald-50/50" : ""}`}
+                        className={`cursor-pointer transition-colors ${selectedTask?.id === task.id ? "bg-emerald-950/60 border-l-2 border-l-emerald-500" : "hover:bg-white/5"}`}
                         onClick={() => setSelectedTask(task)}
                       >
                         <TableCell><Checkbox /></TableCell>

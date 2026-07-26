@@ -144,7 +144,7 @@ export default function BreaksPage() {
                 {breakRecords.map((record) => {
                   const Icon = breakTypeIcons[record.type] || Coffee;
                   return (
-                    <TableRow key={record.id} className={record.ongoing ? "bg-emerald-50/30" : ""}>
+                    <TableRow key={record.id} className={record.ongoing ? "bg-emerald-950/60 border-l-2 border-l-emerald-500" : ""}>
                       <TableCell className="text-sm">{record.startTime}</TableCell>
                       <TableCell className="text-sm">
                         {record.ongoing ? (

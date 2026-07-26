@@ -27,7 +27,10 @@ export function ProgressBar({
         )}
       >
         <div
-          className={cn("h-full rounded-full bg-[#10B981] transition-all", barClassName)}
+          className={cn(
+            "h-full rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-500 shadow-[0_0_8px_rgba(5,150,105,0.4)] transition-all",
+            barClassName
+          )}
           style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         />
       </div>
