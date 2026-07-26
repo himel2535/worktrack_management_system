@@ -25,13 +25,13 @@ export function PageHeader({
   children,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div>
         {greeting && (
-          <p className="mb-1 text-lg font-semibold text-slate-800">{greeting}</p>
+          <p className="mb-1 text-lg font-semibold text-white/80">{greeting}</p>
         )}
-        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+        <h1 className="text-2xl font-bold text-white">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-white/50">{subtitle}</p>}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {children}
@@ -39,7 +39,7 @@ export function PageHeader({
         {actionLabel && (
           <Button
             onClick={onAction}
-            className="bg-[#059669] hover:bg-[#047857] text-white gap-2"
+            className="gap-2 bg-[#059669] text-white hover:bg-[#047857]"
           >
             <Plus className="h-4 w-4" />
             {actionLabel}

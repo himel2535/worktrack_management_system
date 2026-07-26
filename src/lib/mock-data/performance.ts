@@ -66,6 +66,16 @@ export const performanceTrendData = [
   { day: "Sun", overall: 0, discipline: 0, workPerformance: 0 },
 ];
 
+export const dashboardOfficePointsData = [
+  { day: "Sun", officePoints: 2, benchmark: 3 },
+  { day: "Mon", officePoints: 5, benchmark: 4 },
+  { day: "Tue", officePoints: 4, benchmark: 4 },
+  { day: "Wed", officePoints: 6, benchmark: 5 },
+  { day: "Thu", officePoints: 5, benchmark: 5 },
+  { day: "Fri", officePoints: 7, benchmark: 6 },
+  { day: "Sat", officePoints: 3, benchmark: 4 },
+];
+
 export const pointHistory: PointHistory[] = [
   { id: "1", time: "10:08 AM", description: "Hourly update on time", points: 1 },
   { id: "2", time: "11:08 AM", description: "Hourly update on time", points: 1 },

@@ -1,11 +1,22 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
 import {
   UserCheck,
   Play,
   FileText,
   Coffee,
   AlertCircle,
-  ChevronRight,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PointsIndicator } from "@/components/shared/PointsIndicator";
 import { todayTimeline } from "@/lib/mock-data/timeline";
 import { TimelineEvent } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -21,8 +32,8 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const colorMap: Record<string, string> = {
-  present: "bg-blue-50 text-blue-600",
-  work_start: "bg-emerald-50 text-emerald-600",
+  present: "bg-emerald-50 text-emerald-600",
+  work_start: "bg-blue-50 text-blue-600",
   update: "bg-emerald-50 text-emerald-600",
   break_start: "bg-orange-50 text-orange-600",
   break_end: "bg-orange-50 text-orange-600",
@@ -30,24 +41,22 @@ const colorMap: Record<string, string> = {
   project: "bg-purple-50 text-purple-600",
 };
 
-function PointPill({ points }: { points: number }) {
-  const isPositive = points > 0;
-  return (
-    <span
-      className={cn(
-        "inline-flex rounded-full px-2 py-0.5 text-xs font-semibold",
-        isPositive
-          ? "bg-emerald-50 text-emerald-600"
-          : "bg-red-50 text-red-600"
-      )}
-    >
-      {isPositive ? "+" : ""}
-      {points} Point{Math.abs(points) !== 1 ? "s" : ""}
-    </span>
-  );
-}
+const filterMap: Record<string, TimelineEvent["type"][] | null> = {
+  all: null,
+  work: ["work_start"],
+  updates: ["update", "missed"],
+  breaks: ["break_start", "break_end"],
+};
 
-function TimelineEntry({ event }: { event: TimelineEvent }) {
+function TimelineEntry({
+  event,
+  isLast,
+  isGlass,
+}: {
+  event: TimelineEvent;
+  isLast?: boolean;
+  isGlass?: boolean;
+}) {
   const Icon = iconMap[event.type] || FileText;
   const color = colorMap[event.type] || "bg-slate-50 text-slate-600";
   const isMissed = event.type === "missed";
@@ -55,54 +64,163 @@ function TimelineEntry({ event }: { event: TimelineEvent }) {
   return (
     <div
       className={cn(
-        "relative flex gap-3 rounded-lg pb-4 last:pb-0",
-        isMissed && "bg-red-50/50 p-2 -mx-2"
+        "relative grid grid-cols-[4.5rem_2rem_1fr_auto] items-start gap-x-2 py-2 last:border-0",
+        isGlass ? "border-b border-white/10" : "border-b border-slate-100",
+        isMissed && (isGlass ? "bg-red-500/10" : "bg-red-50/40")
       )}
     >
-      <div className="relative z-10 flex flex-col items-center">
+      <span
+        className={cn(
+          "pt-1 text-xs tabular-nums",
+          isGlass ? "text-white/45" : "text-slate-500"
+        )}
+      >
+        {event.time}
+      </span>
+
+      <div className="relative flex justify-center">
+        {!isLast && (
+          <div
+            className={cn(
+              "absolute top-7 left-1/2 h-[calc(100%+0.5rem)] w-px -translate-x-1/2",
+              isGlass ? "bg-white/15" : "bg-slate-200"
+            )}
+          />
+        )}
         <div
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full",
+            "relative z-10 flex h-7 w-7 items-center justify-center rounded-full",
             color
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3.5 w-3.5" />
         </div>
-        <div className="absolute top-8 h-full w-px bg-slate-200" />
       </div>
-      <div className="min-w-0 flex-1 pt-0.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-slate-800">{event.title}</p>
-            {event.points !== undefined && (
-              <PointPill points={event.points} />
-            )}
-          </div>
-          <span className="shrink-0 text-xs text-slate-400">{event.time}</span>
-        </div>
+
+      <div className="min-w-0 pt-0.5">
+        <p
+          className={cn(
+            "text-sm font-medium",
+            isGlass ? "text-white" : "text-slate-800"
+          )}
+        >
+          {event.title}
+        </p>
         {event.description && (
-          <p className="mt-0.5 text-xs text-slate-500">{event.description}</p>
+          <p
+            className={cn(
+              "mt-0.5 text-xs",
+              isGlass ? "text-white/50" : "text-slate-500"
+            )}
+          >
+            {event.description}
+          </p>
+        )}
+      </div>
+
+      <div className="flex shrink-0 items-start pt-0.5">
+        {event.badge && (
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-xs font-medium",
+              event.badgeVariant === "success"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : isGlass
+                  ? "bg-white/10 text-white/60"
+                  : "bg-slate-100 text-slate-600"
+            )}
+          >
+            {event.badge}
+          </span>
+        )}
+        {event.points !== undefined && (
+          <PointsIndicator points={event.points} compact />
         )}
       </div>
     </div>
   );
 }
 
-export function TodayTimeline() {
+const TIMELINE_PREVIEW_COUNT = 6;
+
+interface TodayTimelineProps {
+  theme?: "light" | "glass";
+}
+
+export function TodayTimeline({ theme = "glass" }: TodayTimelineProps) {
+  const isGlass = theme === "glass";
+  const [filter, setFilter] = useState("all");
+
   return (
-    <div className="h-full rounded-2xl border border-slate-100/80 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-800">Today&apos;s Timeline</h3>
-        <button className="flex items-center gap-0.5 text-xs text-emerald-600 hover:underline">
-          View Full Timeline
-          <ChevronRight className="h-3 w-3" />
-        </button>
+    <div className={cn("relative overflow-hidden panel-card", isGlass && "p-1")}>
+      {isGlass && (
+        <div className="pointer-events-none absolute right-0 top-8 h-48 w-24 bg-gradient-to-b from-cyan-400/20 via-blue-500/10 to-transparent blur-2xl" />
+      )}
+
+      <div className="relative mb-2 flex items-center justify-between">
+        <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
+          Today&apos;s Timeline
+        </h3>
+        <Select
+          value={filter}
+          onValueChange={(value) => setFilter(value ?? "all")}
+        >
+          <SelectTrigger
+            className={cn(
+              "h-7 w-[7.5rem] text-xs",
+              isGlass && "border-white/10 bg-white/5 text-white"
+            )}
+          >
+            <SelectValue placeholder="All Events" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Events</SelectItem>
+            <SelectItem value="work">Work</SelectItem>
+            <SelectItem value="updates">Updates</SelectItem>
+            <SelectItem value="breaks">Breaks</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      <div>
-        {todayTimeline.map((event) => (
-          <TimelineEntry key={event.id} event={event} />
-        ))}
+
+      <div className="relative">
+        <TimelineList filter={filter} isGlass={isGlass} />
       </div>
+
+      <div className="relative mt-2 text-center">
+        <Link
+          href="/hourly-updates"
+          className="text-xs font-medium text-emerald-400 hover:underline"
+        >
+          View Full Timeline →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function TimelineList({
+  filter,
+  isGlass,
+}: {
+  filter: string;
+  isGlass?: boolean;
+}) {
+  const allowedTypes = filterMap[filter] ?? null;
+  const filtered = allowedTypes
+    ? todayTimeline.filter((e) => allowedTypes.includes(e.type))
+    : todayTimeline;
+  const previewEvents = filtered.slice(0, TIMELINE_PREVIEW_COUNT);
+
+  return (
+    <div>
+      {previewEvents.map((event, index) => (
+        <TimelineEntry
+          key={event.id}
+          event={event}
+          isLast={index === previewEvents.length - 1}
+          isGlass={isGlass}
+        />
+      ))}
     </div>
   );
 }

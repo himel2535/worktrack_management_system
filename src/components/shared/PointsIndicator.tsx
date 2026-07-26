@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 interface PointsIndicatorProps {
   points: number;
   className?: string;
+  compact?: boolean;
 }
 
-export function PointsIndicator({ points, className }: PointsIndicatorProps) {
+export function PointsIndicator({ points, className, compact }: PointsIndicatorProps) {
   if (points === 0) return null;
   const isPositive = points > 0;
   return (
@@ -17,7 +18,8 @@ export function PointsIndicator({ points, className }: PointsIndicatorProps) {
       )}
     >
       {isPositive ? "+" : ""}
-      {points} Point{Math.abs(points) !== 1 ? "s" : ""}
+      {points}
+      {!compact && ` Point${Math.abs(points) !== 1 ? "s" : ""}`}
     </span>
   );
 }

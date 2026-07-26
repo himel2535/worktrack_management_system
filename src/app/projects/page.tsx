@@ -68,7 +68,7 @@ export default function ProjectsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   return (
-    <>
+    <div className="page-stack">
       <PageHeader
         title="Projects"
         subtitle="Manage and track all your projects."
@@ -76,31 +76,37 @@ export default function ProjectsPage() {
         showClock
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <StatCard label="Total Projects" value={projectStats.total} subLabel={`${projectStats.completed} Completed`} icon={FolderKanban} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
         <StatCard label="In Progress" value={projectStats.inProgress} subLabel="60% Avg Progress" icon={Loader} iconBg="bg-blue-50" iconColor="text-blue-600" />
         <StatCard label="Pending" value={projectStats.pending} subLabel="20% Avg Progress" icon={Clock} iconBg="bg-orange-50" iconColor="text-orange-600" />
         <StatCard label="Completed" value={projectStats.completed} subLabel="100% Avg Progress" icon={CheckCircle2} iconBg="bg-purple-50" iconColor="text-purple-600" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="page-grid lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <div className="rounded-xl border border-slate-100 bg-white shadow-sm">
+          <div className="panel-card">
             <Tabs defaultValue="my-projects">
-              <div className="border-b border-slate-100 px-5 pt-4">
-                <TabsList className="bg-transparent p-0 h-auto gap-6">
-                  <TabsTrigger value="my-projects" className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3">
+              <div className="border-b border-white/10 px-3.5 pt-3">
+                <TabsList variant="line" className="h-auto gap-2 p-0">
+                  <TabsTrigger
+                    value="my-projects"
+                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
+                  >
                     My Projects
                   </TabsTrigger>
-                  <TabsTrigger value="archived" className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3">
+                  <TabsTrigger
+                    value="archived"
+                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
+                  >
                     Archived Projects
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 p-4">
+              <div className="flex flex-wrap items-center gap-2 p-3">
                 <div className="relative flex-1 min-w-[200px]">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                   <Input placeholder="Search projects..." className="pl-9" />
                 </div>
                 <Select defaultValue="all">
@@ -158,24 +164,24 @@ export default function ProjectsPage() {
                                 <Icon className="h-4 w-4 text-emerald-600" />
                               </div>
                               <div>
-                                <p className="font-medium text-slate-800">{project.name}</p>
-                                <p className="text-xs text-slate-500">{project.category}</p>
+                                <p className="font-medium text-white">{project.name}</p>
+                                <p className="text-xs text-white/50">{project.category}</p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="w-[140px]">
                             <ProgressBar value={project.progress} showLabel />
                           </TableCell>
-                          <TableCell className="text-sm text-slate-600">
+                          <TableCell className="text-sm text-white/60">
                             {project.tasksCompleted}/{project.tasksTotal}
                           </TableCell>
                           <TableCell>
-                            <p className="text-sm text-slate-800">{project.deadline}</p>
+                            <p className="text-sm text-white">{project.deadline}</p>
                           </TableCell>
                           <TableCell>
                             <StatusBadge status={project.status} />
                           </TableCell>
-                          <TableCell className="text-sm text-slate-500">{project.lastWorked}</TableCell>
+                          <TableCell className="text-sm text-white/50">{project.lastWorked}</TableCell>
                           <TableCell>
                             <Button variant="ghost" size="icon">
                               <MoreVertical className="h-4 w-4" />
@@ -186,7 +192,7 @@ export default function ProjectsPage() {
                     })}
                   </TableBody>
                 </Table>
-                <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 text-sm text-slate-500">
+                <div className="flex items-center justify-between border-t border-white/10 px-3 py-2 text-sm text-white/50">
                   <span>Showing 1 to {projects.length} of {projects.length} projects</span>
                 </div>
               </TabsContent>
@@ -194,9 +200,9 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Overall Progress</h3>
+        <div className="page-col-stack lg:col-span-4">
+          <div className="panel-card">
+            <h3 className="panel-title">Overall Progress</h3>
             <DonutChart
               data={overallProgressData}
               centerValue={`${projectStats.avgProgress}%`}
@@ -205,29 +211,29 @@ export default function ProjectsPage() {
             />
           </div>
 
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Recent Activity</h3>
-            <div className="space-y-4">
+          <div className="panel-card">
+            <h3 className="panel-title">Recent Activity</h3>
+            <div className="space-y-2">
               {recentActivity.map((item) => {
                 const Icon = activityIcons[item.type] || FileText;
                 return (
-                  <div key={item.id} className="flex gap-3">
+                  <div key={item.id} className="flex gap-2">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50">
                       <Icon className="h-4 w-4 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-800">{item.title}</p>
-                      <p className="text-xs text-slate-500">{item.description}</p>
-                      <p className="text-xs text-slate-400">{item.time}</p>
+                      <p className="text-sm font-medium text-white">{item.title}</p>
+                      <p className="text-xs text-white/50">{item.description}</p>
+                      <p className="text-xs text-white/40">{item.time}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <Button variant="outline" className="mt-4 w-full">View All Activity</Button>
+            <Button variant="outline" className="mt-2 w-full">View All Activity</Button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

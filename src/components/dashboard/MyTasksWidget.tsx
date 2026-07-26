@@ -1,16 +1,53 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
+import { Check } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { tasks } from "@/lib/mock-data/tasks";
+import { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-function DeadlineTag({
+const iconStyles = {
+  green: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  orange: "bg-orange-50 text-orange-600 border-orange-200",
+  blue: "bg-blue-50 text-blue-600 border-blue-200",
+} as const;
+
+const glassIconStyles = {
+  green: "bg-emerald-500/20 text-emerald-400 border-emerald-400/30",
+  orange: "bg-orange-500/20 text-orange-400 border-orange-400/30",
+  blue: "bg-blue-500/20 text-blue-400 border-blue-400/30",
+} as const;
+
+function TaskIcon({
+  color,
+  isGlass,
+}: {
+  color: Task["iconColor"];
+  isGlass?: boolean;
+}) {
+  const styles = isGlass ? glassIconStyles : iconStyles;
+  const style = styles[color ?? "green"];
+  return (
+    <div
+      className={cn(
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
+        style
+      )}
+    >
+      <Check className="h-4 w-4" />
+    </div>
+  );
+}
+
+function DeadlineText({
   deadline,
   deadlineLabel,
+  isGlass,
 }: {
   deadline: string;
   deadlineLabel?: string;
+  isGlass?: boolean;
 }) {
-  const isToday = deadlineLabel?.includes("Today");
+  const isToday = deadlineLabel?.toLowerCase().includes("today");
   let label = "Today";
   if (!isToday) {
     if (deadlineLabel) {
@@ -24,10 +61,12 @@ function DeadlineTag({
   return (
     <span
       className={cn(
-        "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
+        "shrink-0 text-xs font-medium",
         isToday
-          ? "bg-red-50 text-red-600"
-          : "bg-slate-100 text-slate-600"
+          ? "text-red-400"
+          : isGlass
+            ? "text-white/45"
+            : "text-slate-500"
       )}
     >
       {label}
@@ -35,31 +74,55 @@ function DeadlineTag({
   );
 }
 
-export function MyTasksWidget() {
-  const myTasks = tasks.filter((t) => t.status !== "completed").slice(0, 4);
+interface MyTasksWidgetProps {
+  theme?: "light" | "glass";
+}
+
+export function MyTasksWidget({ theme = "glass" }: MyTasksWidgetProps) {
+  const isGlass = theme === "glass";
+  const myTasks = tasks.filter((t) => t.status !== "completed").slice(0, 3);
 
   return (
-    <div className="h-full rounded-2xl border border-slate-100/80 bg-white p-5 shadow-sm">
-      <h3 className="mb-4 font-semibold text-slate-800">My Tasks</h3>
-      <div className="space-y-2">
+    <div className={cn("panel-card", isGlass && "p-1")}>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
+          My Tasks
+        </h3>
+        <Link
+          href="/tasks"
+          className="text-xs font-medium text-emerald-400 hover:underline"
+        >
+          View All
+        </Link>
+      </div>
+      <div>
         {myTasks.map((task) => (
           <div
             key={task.id}
-            className="flex items-center gap-3 rounded-lg border border-slate-50 p-3 hover:bg-slate-50/80"
+            className={cn(
+              "flex items-center gap-2.5 py-2 last:border-0",
+              isGlass ? "border-b border-white/10" : "border-b border-slate-100"
+            )}
           >
-            <Checkbox />
+            <TaskIcon color={task.iconColor} isGlass={isGlass} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-800">
+              <p
+                className={cn(
+                  "truncate text-sm font-medium",
+                  isGlass ? "text-white" : "text-slate-800"
+                )}
+              >
                 {task.title}
               </p>
-              <p className="truncate text-xs text-slate-500">
+              <p className="truncate text-xs text-emerald-400">
                 {task.projectName}
               </p>
             </div>
             <StatusBadge status={task.status} />
-            <DeadlineTag
+            <DeadlineText
               deadline={task.deadline}
               deadlineLabel={task.deadlineLabel}
+              isGlass={isGlass}
             />
           </div>
         ))}

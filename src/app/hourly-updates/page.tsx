@@ -34,26 +34,26 @@ import {
 
 export default function HourlyUpdatesPage() {
   return (
-    <>
+    <div className="page-stack">
       <PageHeader
         title="Hourly Updates"
         subtitle="Track your hourly progress and updates."
         showClock
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard label="Expected Updates" value={hourlyUpdateStats.expected} icon={ClipboardList} iconBg="bg-slate-50" iconColor="text-slate-600" />
-        <StatCard label="Submitted" value={hourlyUpdateStats.submitted} subLabel="On Time" icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
-        <StatCard label="Missed" value={hourlyUpdateStats.missed} subLabel="Missed" icon={XCircle} iconBg="bg-red-50" iconColor="text-red-600" />
-        <StatCard label="Upcoming" value={hourlyUpdateStats.upcoming} subLabel="Due Today" icon={Clock} iconBg="bg-blue-50" iconColor="text-blue-600" />
-        <StatCard label="Net Points" value={`+${hourlyUpdateStats.netPoints}`} subLabel="Today" icon={Star} iconBg="bg-yellow-50" iconColor="text-yellow-600" valueColor="text-emerald-600" />
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+        <StatCard variant="glass" label="Expected Updates" value={hourlyUpdateStats.expected} icon={ClipboardList} iconBg="bg-white/5" iconColor="text-white/60" />
+        <StatCard variant="glass" label="Submitted" value={hourlyUpdateStats.submitted} subLabel="On Time" icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
+        <StatCard variant="glass" label="Missed" value={hourlyUpdateStats.missed} subLabel="Missed" icon={XCircle} iconBg="bg-red-50" iconColor="text-red-600" />
+        <StatCard variant="glass" label="Upcoming" value={hourlyUpdateStats.upcoming} subLabel="Due Today" icon={Clock} iconBg="bg-blue-50" iconColor="text-blue-600" />
+        <StatCard variant="glass" label="Net Points" value={`+${hourlyUpdateStats.netPoints}`} subLabel="Today" icon={Star} iconBg="bg-yellow-50" iconColor="text-yellow-600" valueColor="text-emerald-600" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="page-grid lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="font-semibold text-slate-800">Today&apos;s Hourly Updates</h3>
+          <div className="panel-card">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="panel-title mb-0">Today&apos;s Hourly Updates</h3>
               <Select defaultValue="all">
                 <SelectTrigger className="w-[130px]"><SelectValue placeholder="All Status" /></SelectTrigger>
                 <SelectContent>
@@ -73,28 +73,28 @@ export default function HourlyUpdatesPage() {
                   : "bg-emerald-50 text-emerald-600";
 
                 return (
-                  <div key={update.id} className="relative flex gap-4 pb-8 last:pb-0">
+                  <div key={update.id} className="relative flex gap-2 pb-4 last:pb-0">
                     {index < hourlyUpdates.length - 1 && (
-                      <div className="absolute left-[18px] top-10 h-full w-px bg-slate-200" />
+                      <div className="absolute left-[18px] top-10 h-full w-px bg-white/15" />
                     )}
                     <div className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconColor}`}>
                       <Icon className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 rounded-lg border border-slate-50 p-4">
+                    <div className="flex-1 rounded-lg border border-white/10 p-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-800">{update.time}</span>
+                        <span className="text-sm font-semibold text-white">{update.time}</span>
                         {update.dueTime && update.status !== "upcoming" && (
-                          <span className="text-xs text-slate-400">Due: {update.dueTime}</span>
+                          <span className="text-xs text-white/40">Due: {update.dueTime}</span>
                         )}
                         <StatusBadge status={update.status} />
                         <PointsIndicator points={update.points} />
                       </div>
-                      <p className="mt-1 font-medium text-slate-700">{update.title}</p>
-                      <p className="mt-1 text-sm text-slate-500">{update.description}</p>
+                      <p className="mt-1 font-medium text-white/80">{update.title}</p>
+                      <p className="mt-1 text-sm text-white/50">{update.description}</p>
                       {update.attachments && (
                         <div className="mt-2 flex gap-2">
                           {update.attachments.map((file) => (
-                            <span key={file} className="flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">
+                            <span key={file} className="flex items-center gap-1 rounded bg-white/10 px-2 py-1 text-xs text-white/60">
                               <Paperclip className="h-3 w-3" />
                               {file}
                             </span>
@@ -107,7 +107,7 @@ export default function HourlyUpdatesPage() {
               })}
             </div>
 
-            <div className="mt-6 text-center">
+            <div className="mt-3 text-center">
               <Button variant="outline" className="gap-2">
                 View Tomorrow&apos;s Schedule
                 <ChevronRight className="h-4 w-4" />
@@ -116,29 +116,29 @@ export default function HourlyUpdatesPage() {
           </div>
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Today&apos;s Score</h3>
+        <div className="page-col-stack lg:col-span-4">
+          <div className="panel-card">
+            <h3 className="panel-title">Today&apos;s Score</h3>
             <DonutChart
               data={todayScoreData}
               centerValue={`+${hourlyUpdateStats.netPoints}`}
               centerLabel="Net Points"
               height={160}
             />
-            <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-              <div className="rounded-lg bg-slate-50 p-3">
-                <p className="text-lg font-bold text-slate-800">{hourlyUpdateStats.completionRate}%</p>
-                <p className="text-xs text-slate-500">Completion Rate</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+              <div className="rounded-lg bg-white/5 p-2">
+                <p className="text-lg font-bold text-white">{hourlyUpdateStats.completionRate}%</p>
+                <p className="text-xs text-white/50">Completion Rate</p>
               </div>
-              <div className="rounded-lg bg-slate-50 p-3">
-                <p className="text-lg font-bold text-slate-800">{hourlyUpdateStats.onTimeRate}%</p>
-                <p className="text-xs text-slate-500">On Time Rate</p>
+              <div className="rounded-lg bg-white/5 p-2">
+                <p className="text-lg font-bold text-white">{hourlyUpdateStats.onTimeRate}%</p>
+                <p className="text-xs text-white/50">On Time Rate</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Daily Progress</h3>
+          <div className="panel-card">
+            <h3 className="panel-title">Daily Progress</h3>
             <LineChart
               data={dailyProgressData}
               lines={[{ key: "points", color: "#10B981", name: "Points" }]}
@@ -151,13 +151,13 @@ export default function HourlyUpdatesPage() {
             items={updateGuidelines}
             footer={
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Need Help?</span>
+                <span className="text-sm text-white/50">Need Help?</span>
                 <Button variant="outline" size="sm">View Help Center</Button>
               </div>
             }
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }

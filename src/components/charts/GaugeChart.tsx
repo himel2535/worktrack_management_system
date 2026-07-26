@@ -24,7 +24,7 @@ export function GaugeChart({ score, maxScore = 100, size = 160 }: GaugeChartProp
         <path
           d={`M 12 ${size / 2} A ${radius} ${radius} 0 0 1 ${size - 12} ${size / 2}`}
           fill="none"
-          stroke="#E2E8F0"
+          stroke="rgba(255,255,255,0.12)"
           strokeWidth="12"
           strokeLinecap="round"
         />
@@ -40,8 +40,8 @@ export function GaugeChart({ score, maxScore = 100, size = 160 }: GaugeChartProp
         />
       </svg>
       <div className="absolute bottom-0 flex flex-col items-center">
-        <span className="text-3xl font-bold text-slate-800">{score}</span>
-        <span className="text-xs text-slate-500">/ {maxScore}</span>
+        <span className="text-3xl font-bold text-white">{score}</span>
+        <span className="text-xs text-white/50">/ {maxScore}</span>
       </div>
     </div>
   );

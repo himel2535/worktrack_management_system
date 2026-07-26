@@ -27,10 +27,13 @@ export const dashboardStats = {
 };
 
 export const todaySummary = {
-  officeTime: "04:32:18",
-  activeWorkTime: "03:54:06",
-  breakCount: 4,
-  tasksCompleted: 2,
+  officeTimeRange: "09:04 AM - --:--",
+  totalOfficeTime: "01:40:12",
+  activeWorkTime: "01:22:05",
+  totalBreakTime: "00:18:07",
+  breakCount: 2,
+  projectsWorked: 2,
+  tasksCompleted: 3,
   productiveTime: 82,
 };
 

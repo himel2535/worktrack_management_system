@@ -14,13 +14,19 @@ interface AreaChartProps {
   data: { period: string; hours: number }[];
   height?: number;
   color?: string;
+  theme?: "light" | "dark";
 }
 
 export function AreaChart({
   data,
   height = 180,
   color = "#10B981",
+  theme = "dark",
 }: AreaChartProps) {
+  const isDark = theme === "dark";
+  const gridStroke = isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0";
+  const tickFill = isDark ? "rgba(255,255,255,0.45)" : "#64748B";
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <RechartsAreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -30,10 +36,22 @@ export function AreaChart({
             <stop offset="95%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-        <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} />
-        <YAxis tick={{ fontSize: 11, fill: "#64748B" }} unit="h" />
-        <Tooltip formatter={(value) => [`${value}h`, "Break Time"]} />
+        <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+        <XAxis dataKey="period" tick={{ fontSize: 11, fill: tickFill }} />
+        <YAxis tick={{ fontSize: 11, fill: tickFill }} unit="h" />
+        <Tooltip
+          formatter={(value) => [`${value}h`, "Break Time"]}
+          contentStyle={
+            isDark
+              ? {
+                  backgroundColor: "rgba(15,23,42,0.9)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 8,
+                  color: "#fff",
+                }
+              : undefined
+          }
+        />
         <Area
           type="monotone"
           dataKey="hours"

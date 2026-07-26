@@ -65,7 +65,7 @@ export default function AttendancePage() {
   ];
 
   return (
-    <>
+    <div className="page-stack">
       <PageHeader
         title="Attendance"
         subtitle="Track your attendance and punctuality."
@@ -73,7 +73,7 @@ export default function AttendancePage() {
         dateLabel={formatMonthYear(today)}
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
         <StatCard label="Present Days" value={attendanceStats.presentDays} subLabel="This Month" icon={UserCheck} iconBg="bg-emerald-50" iconColor="text-emerald-600" valueColor="text-emerald-600" />
         <StatCard label="Late Days" value={attendanceStats.lateDays} subLabel="This Month" icon={Clock} iconBg="bg-orange-50" iconColor="text-orange-600" valueColor="text-orange-600" />
         <StatCard label="Absent Days" value={attendanceStats.absentDays} subLabel="This Month" icon={UserX} iconBg="bg-red-50" iconColor="text-red-600" valueColor="text-red-600" />
@@ -81,13 +81,13 @@ export default function AttendancePage() {
         <StatCard label="Late Penalty" value={`${attendanceStats.latePenalty} Points`} icon={Star} iconBg="bg-purple-50" iconColor="text-purple-600" valueColor="text-purple-600" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Attendance Calendar — July 2026</h3>
+      <div className="page-grid lg:grid-cols-12">
+        <div className="page-col-stack lg:col-span-8">
+          <div className="panel-card">
+            <h3 className="panel-title">Attendance Calendar — July 2026</h3>
             <div className="grid grid-cols-7 gap-1 text-center">
               {weekDays.map((day) => (
-                <div key={day} className="py-2 text-xs font-medium text-slate-500">{day}</div>
+                <div key={day} className="py-2 text-xs font-medium text-white/50">{day}</div>
               ))}
               {calendarDays.map((day, i) => (
                 <div
@@ -99,7 +99,7 @@ export default function AttendancePage() {
                 >
                   {day && (
                     <>
-                      <span className={cn("text-sm", day.isToday ? "font-bold text-emerald-700" : "text-slate-700")}>
+                      <span className={cn("text-sm", day.isToday ? "font-bold text-emerald-700" : "text-white/80")}>
                         {day.date}
                       </span>
                       <span className={cn("mt-1 h-1.5 w-1.5 rounded-full", statusDotColors[day.status])} />
@@ -108,7 +108,7 @@ export default function AttendancePage() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-white/50">
               {[
                 { color: "bg-emerald-500", label: "Present" },
                 { color: "bg-orange-500", label: "Late" },
@@ -123,9 +123,9 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-100 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <h3 className="font-semibold text-slate-800">Attendance Records</h3>
+          <div className="panel-card">
+            <div className="flex items-center justify-between border-b border-white/10 px-3.5 py-2.5">
+              <h3 className="text-sm font-semibold text-white">Attendance Records</h3>
               <div className="flex gap-2">
                 <Select defaultValue="all">
                   <SelectTrigger className="w-[120px]"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -171,15 +171,15 @@ export default function AttendancePage() {
                 ))}
               </TableBody>
             </Table>
-            <div className="border-t border-slate-100 px-5 py-3 text-sm text-slate-500">
+            <div className="border-t border-white/10 px-3.5 py-2 text-sm text-white/50">
               Showing 1 to {attendanceRecords.length} of 26 records
             </div>
           </div>
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Summary (July 2026)</h3>
+        <div className="page-col-stack lg:col-span-4">
+          <div className="panel-card">
+            <h3 className="panel-title">Summary (July 2026)</h3>
             <DonutChart
               data={attendanceSummaryData}
               centerValue={attendanceStats.totalDays}
@@ -188,33 +188,33 @@ export default function AttendancePage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm text-center">
-              <Flame className="mx-auto mb-2 h-5 w-5 text-orange-500" />
-              <p className="text-xs text-slate-500">Best Streak</p>
-              <p className="text-xl font-bold text-slate-800">{streaks.best} Days</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="panel-card text-center">
+              <Flame className="mx-auto mb-1.5 h-5 w-5 text-orange-500" />
+              <p className="text-xs text-white/50">Best Streak</p>
+              <p className="text-xl font-bold text-white">{streaks.best} Days</p>
             </div>
-            <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm text-center">
-              <Flame className="mx-auto mb-2 h-5 w-5 text-emerald-500" />
-              <p className="text-xs text-slate-500">Current Streak</p>
-              <p className="text-xl font-bold text-slate-800">{streaks.current} Days</p>
+            <div className="panel-card text-center">
+              <Flame className="mx-auto mb-1.5 h-5 w-5 text-emerald-500" />
+              <p className="text-xs text-white/50">Current Streak</p>
+              <p className="text-xl font-bold text-white">{streaks.current} Days</p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Punctuality Overview</h3>
-            <div className="space-y-3">
+          <div className="panel-card">
+            <h3 className="panel-title">Punctuality Overview</h3>
+            <div className="space-y-2">
               {punctualityOverview.map((item) => (
                 <div key={item.label} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-slate-600">{item.label}</span>
+                    <span className="text-white/60">{item.label}</span>
                   </div>
-                  <span className="font-semibold text-slate-800">{item.days} Days</span>
+                  <span className="font-semibold text-white">{item.days} Days</span>
                 </div>
               ))}
             </div>
-            <button className="mt-4 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
+            <button className="mt-2 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
               View Punctuality Report
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -232,6 +232,6 @@ export default function AttendancePage() {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -50,7 +50,7 @@ export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(tasks[0]);
 
   return (
-    <>
+    <div className="page-stack">
       <PageHeader
         title="Tasks"
         subtitle="Manage your tasks and track your progress."
@@ -58,7 +58,7 @@ export default function TasksPage() {
         showClock
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
         <StatCard label="Total Tasks" value={taskStats.total} icon={CheckSquare} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
         <StatCard label="To Do" value={taskStats.todo} icon={FileText} iconBg="bg-blue-50" iconColor="text-blue-600" />
         <StatCard label="In Progress" value={taskStats.inProgress} icon={Loader} iconBg="bg-orange-50" iconColor="text-orange-600" />
@@ -66,24 +66,30 @@ export default function TasksPage() {
         <StatCard label="Completed" value={taskStats.completed} icon={CheckCircle2} iconBg="bg-green-50" iconColor="text-green-600" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="page-grid lg:grid-cols-12">
         <div className={`${selectedTask ? "lg:col-span-8" : "lg:col-span-12"} transition-all`}>
-          <div className="rounded-xl border border-slate-100 bg-white shadow-sm">
+          <div className="panel-card">
             <Tabs defaultValue="my-tasks">
-              <div className="border-b border-slate-100 px-5 pt-4">
-                <TabsList className="bg-transparent p-0 h-auto gap-6">
-                  <TabsTrigger value="my-tasks" className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3">
+              <div className="border-b border-white/10 px-3.5 pt-3">
+                <TabsList variant="line" className="h-auto gap-2 p-0">
+                  <TabsTrigger
+                    value="my-tasks"
+                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
+                  >
                     My Tasks
                   </TabsTrigger>
-                  <TabsTrigger value="completed" className="rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3">
+                  <TabsTrigger
+                    value="completed"
+                    className="border-b-2 border-transparent px-3 pb-3 data-active:border-emerald-500 data-active:bg-transparent"
+                  >
                     Completed Tasks
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 p-4">
+              <div className="flex flex-wrap items-center gap-2 p-3">
                 <div className="relative flex-1 min-w-[200px]">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                   <Input placeholder="Search tasks..." className="pl-9" />
                 </div>
                 <Select defaultValue="all-projects">
@@ -136,14 +142,14 @@ export default function TasksPage() {
                       >
                         <TableCell><Checkbox /></TableCell>
                         <TableCell>
-                          <p className="font-medium text-slate-800">{task.title}</p>
-                          <p className="text-xs text-slate-500 line-clamp-1">{task.description}</p>
+                          <p className="font-medium text-white">{task.title}</p>
+                          <p className="text-xs text-white/50 line-clamp-1">{task.description}</p>
                         </TableCell>
-                        <TableCell className="text-sm text-slate-600">{task.projectName}</TableCell>
+                        <TableCell className="text-sm text-white/60">{task.projectName}</TableCell>
                         <TableCell><PriorityBadge priority={task.priority} /></TableCell>
                         <TableCell><StatusBadge status={task.status} /></TableCell>
                         <TableCell>
-                          <span className={`text-sm ${task.deadlineLabel?.includes("Today") ? "text-red-600 font-medium" : "text-slate-600"}`}>
+                          <span className={`text-sm ${task.deadlineLabel?.includes("Today") ? "text-red-600 font-medium" : "text-white/60"}`}>
                             {task.deadlineLabel || task.deadline}
                           </span>
                         </TableCell>
@@ -164,19 +170,19 @@ export default function TasksPage() {
 
         {selectedTask && (
           <div className="lg:col-span-4">
-            <div className="sticky top-6 rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold text-slate-800">Task Details</h3>
+            <div className="sticky top-3 panel-card">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="panel-title mb-0">Task Details</h3>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-red-500" /></Button>
                 </div>
               </div>
 
-              <h2 className="mb-2 text-xl font-bold text-slate-900">{selectedTask.title}</h2>
+              <h2 className="mb-2 text-xl font-bold text-white">{selectedTask.title}</h2>
               <StatusBadge status={selectedTask.status} />
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-3 space-y-2">
                 {[
                   { icon: FolderKanban, label: "Project", value: selectedTask.projectName },
                   { icon: Flag, label: "Priority", value: selectedTask.priority, badge: true },
@@ -187,33 +193,33 @@ export default function TasksPage() {
                   { icon: Clock, label: "Spent Time", value: selectedTask.spentTime },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-3 text-sm">
-                    <item.icon className="h-4 w-4 text-slate-400" />
-                    <span className="text-slate-500">{item.label}</span>
-                    <span className="ml-auto font-medium capitalize text-slate-800">
+                    <item.icon className="h-4 w-4 text-white/40" />
+                    <span className="text-white/50">{item.label}</span>
+                    <span className="ml-auto font-medium capitalize text-white">
                       {item.badge ? <PriorityBadge priority={selectedTask.priority} /> : item.value}
                     </span>
                   </div>
                 ))}
                 <div className="flex items-center gap-3 text-sm">
-                  <Loader className="h-4 w-4 text-slate-400" />
-                  <span className="text-slate-500">Progress</span>
+                  <Loader className="h-4 w-4 text-white/40" />
+                  <span className="text-white/50">Progress</span>
                   <div className="ml-auto w-24"><ProgressBar value={selectedTask.progress} showLabel /></div>
                 </div>
               </div>
 
-              <div className="mt-5">
-                <h4 className="mb-2 text-sm font-medium text-slate-700">Description</h4>
-                <p className="text-sm text-slate-600">{selectedTask.description}</p>
+              <div className="mt-3">
+                <h4 className="mb-1.5 text-sm font-medium text-white/80">Description</h4>
+                <p className="text-sm text-white/60">{selectedTask.description}</p>
               </div>
 
               {selectedTask.attachments && selectedTask.attachments.length > 0 && (
-                <div className="mt-5">
-                  <h4 className="mb-2 text-sm font-medium text-slate-700">Attachments</h4>
+                <div className="mt-3">
+                  <h4 className="mb-1.5 text-sm font-medium text-white/80">Attachments</h4>
                   {selectedTask.attachments.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between rounded-lg border border-slate-100 p-3">
+                    <div key={file.id} className="flex items-center justify-between rounded-lg border border-white/10 p-2">
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{file.name}</p>
-                        <p className="text-xs text-slate-500">{file.size}</p>
+                        <p className="text-sm font-medium text-white">{file.name}</p>
+                        <p className="text-xs text-white/50">{file.size}</p>
                       </div>
                       <Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button>
                     </div>
@@ -221,7 +227,7 @@ export default function TasksPage() {
                 </div>
               )}
 
-              <Button className="mt-6 w-full bg-[#059669] hover:bg-[#047857] gap-2">
+              <Button className="mt-3 w-full gap-2 bg-[#059669] hover:bg-[#047857]">
                 <Play className="h-4 w-4" />
                 Start Work
               </Button>
@@ -229,6 +235,6 @@ export default function TasksPage() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

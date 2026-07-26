@@ -38,6 +38,7 @@ export interface Task {
   status: TaskStatus;
   deadline: string;
   deadlineLabel?: string;
+  iconColor?: "green" | "orange" | "blue";
   progress: number;
   createdAt: string;
   taskType: string;
@@ -100,6 +101,8 @@ export interface TimelineEvent {
   description?: string;
   type: "present" | "work_start" | "update" | "break_start" | "break_end" | "missed" | "project";
   points?: number;
+  badge?: string;
+  badgeVariant?: "success" | "neutral";
 }
 
 export interface AttendanceRecord {

@@ -64,14 +64,14 @@ export default function BreaksPage() {
   }, []);
 
   return (
-    <>
+    <div className="page-stack">
       <PageHeader
         title="Breaks"
         subtitle="Track your breaks and stay balance."
         showClock
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
         <StatCard label="Total Break Time" value={breakStats.totalBreakTime} icon={Timer} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
         <StatCard label="Break Count" value={breakStats.breakCount} icon={Hash} iconBg="bg-blue-50" iconColor="text-blue-600" />
         <StatCard label="Longest Break" value={breakStats.longestBreak} icon={TrendingUp} iconBg="bg-orange-50" iconColor="text-orange-600" />
@@ -79,55 +79,55 @@ export default function BreaksPage() {
         <StatCard label="Break Time %" value={`${breakStats.breakTimePercent}%`} subLabel="Of total office time" icon={Percent} iconBg="bg-red-50" iconColor="text-red-600" />
       </div>
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
+      <div className="page-grid lg:grid-cols-2">
+        <div className="panel-card">
+          <div className="mb-2 flex items-center gap-2">
             <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-600">ON BREAK</span>
           </div>
-          <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50">
-              <Coffee className="h-8 w-8 text-orange-500" />
+          <div className="flex items-start gap-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50">
+              <Coffee className="h-6 w-6 text-orange-500" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-800">{currentBreak.label}</h3>
-              <span className="mt-1 inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 capitalize">
+              <h3 className="text-base font-semibold text-white">{currentBreak.label}</h3>
+              <span className="mt-0.5 inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 capitalize">
                 {currentBreak.type}
               </span>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <p className="text-slate-500">Start Time</p>
-                  <p className="font-medium text-slate-800">{currentBreak.startTime}</p>
+                  <p className="text-white/50">Start Time</p>
+                  <p className="font-medium text-white">{currentBreak.startTime}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Elapsed Time</p>
+                  <p className="text-white/50">Elapsed Time</p>
                   <p className="font-bold text-orange-500">{formatTime(elapsed)}</p>
                 </div>
               </div>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-1.5 text-sm text-white/50">
                 {currentBreak.projectName} — {currentBreak.taskName}
               </p>
             </div>
           </div>
-          <Button className="mt-6 w-full bg-[#059669] hover:bg-[#047857]">End Break</Button>
+          <Button className="mt-3 w-full bg-[#059669] hover:bg-[#047857]">End Break</Button>
         </div>
 
-        <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-          <h3 className="mb-2 font-semibold text-slate-800">Today&apos;s Break Summary</h3>
+        <div className="panel-card">
+          <h3 className="panel-title">Today&apos;s Break Summary</h3>
           <DonutChart
             data={breakSummaryData}
             centerValue={breakStats.totalBreakTime}
             centerLabel="Total Time"
             height={200}
           />
-          <p className="mt-2 text-center text-xs text-slate-500">Break allowed: No Limit</p>
+          <p className="mt-1.5 text-center text-xs text-white/50">Break allowed: No Limit</p>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="page-grid lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <div className="rounded-xl border border-slate-100 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <h3 className="font-semibold text-slate-800">Today&apos;s Breaks</h3>
+          <div className="panel-card">
+            <div className="border-b border-white/10 px-3.5 py-2.5">
+              <h3 className="text-sm font-semibold text-white">Today&apos;s Breaks</h3>
             </div>
             <Table>
               <TableHeader>
@@ -155,40 +155,40 @@ export default function BreaksPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-slate-400" />
+                          <Icon className="h-4 w-4 text-white/40" />
                           <span className="text-sm capitalize">{breakTypeLabels[record.type]}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-sm font-medium">{record.duration}</TableCell>
-                      <TableCell className="text-sm text-slate-500">
+                      <TableCell className="text-sm text-white/50">
                         {record.projectName ? `${record.projectName} / ${record.taskName}` : "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-slate-500">{record.reason || "—"}</TableCell>
+                      <TableCell className="text-sm text-white/50">{record.reason || "—"}</TableCell>
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
-            <div className="border-t border-slate-100 px-5 py-3 text-sm">
-              <span className="text-slate-500">Total Break Time: </span>
+            <div className="border-t border-white/10 px-3.5 py-2 text-sm">
+              <span className="text-white/50">Total Break Time: </span>
               <span className="font-semibold text-emerald-600">{breakStats.totalBreakTime}</span>
             </div>
           </div>
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
+        <div className="page-col-stack lg:col-span-4">
           <GuidelinesCard title="Break Guidelines" items={breakGuidelines} />
 
-          <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h3 className="mb-4 font-semibold text-slate-800">Monthly Break Overview</h3>
+          <div className="panel-card">
+            <h3 className="panel-title">Monthly Break Overview</h3>
             <AreaChart data={monthlyBreakData} />
-            <button className="mt-3 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
+            <button className="mt-2 flex items-center gap-1 text-sm text-emerald-600 hover:underline">
               View Full Report
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

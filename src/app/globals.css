@@ -134,8 +134,66 @@
   }
 }
 
+@layer components {
+  .page-stack {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .page-grid {
+    @apply grid gap-2;
+  }
+
+  .page-col-stack {
+    @apply flex flex-col gap-2;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl;
+  }
+
+  .panel-card {
+    @apply rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl;
+  }
+
+  .panel-title {
+    @apply mb-2 text-base font-bold text-white;
+  }
+
+  .dashboard-shell {
+    @apply min-h-[calc(100vh-2rem)] rounded-2xl bg-gradient-to-br from-[#0B1220] via-[#111827] to-[#0F172A] p-4 lg:p-5;
+  }
+
+  .glass-card-inner {
+    @apply rounded-xl border border-white/10 bg-white/5;
+  }
+
+  .glass-stat-card {
+    @apply rounded-2xl border border-white/10 bg-white/[0.06] p-3.5 backdrop-blur-md;
+  }
+
+  .glass-sidebar {
+    @apply border-r border-slate-200/80 bg-white/80 text-slate-800 backdrop-blur-xl;
+  }
+
+  .panel-title-glass {
+    @apply text-base font-bold text-white;
+  }
+}
+
 @layer utilities {
   .card-hover {
     @apply transition-shadow hover:shadow-md;
+  }
+
+  .text-muted-app {
+    @apply text-white/50;
+  }
+
+  .text-subtle-app {
+    @apply text-white/70;
+  }
+
+  .border-glass {
+    @apply border-white/10;
   }
 }

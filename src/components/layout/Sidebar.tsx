@@ -44,12 +44,12 @@ export function Sidebar() {
     <>
       <div className="border-b border-white/10 px-5 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#10B981]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20">
             <Timer className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-tight">WorkTrack</h1>
-            <p className="text-xs text-white/60">Work Smart, Every Hour.</p>
+            <h1 className="text-lg font-bold leading-tight text-white">WorkTrack</h1>
+            <p className="text-xs text-white/50">Work Smart, Every Hour.</p>
           </div>
         </div>
       </div>
@@ -66,10 +66,10 @@ export function Sidebar() {
               href={item.href}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm"
+                  : "text-white/60 hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />
@@ -80,24 +80,27 @@ export function Sidebar() {
       </nav>
 
       <div className="space-y-3 px-4 pb-4">
-        <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-          <div className="mb-2 flex items-center gap-2 text-sm text-white/70">
-            <Star className="h-4 w-4 text-[#10B981]" />
-            Today&apos;s Points
+        <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+          <div className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-emerald-400/30 to-cyan-400/20 blur-2xl" />
+          <div className="relative">
+            <div className="mb-2 flex items-center gap-2 text-sm text-white/70">
+              <Star className="h-4 w-4 text-emerald-400" />
+              Today&apos;s Points
+            </div>
+            <p className="text-2xl font-bold text-emerald-400">+{todayPoints}</p>
+            <p className="text-xs text-white/45">Total Points</p>
+            <div className="mt-2 flex gap-3 text-xs text-white/50">
+              <span>This Week: +{weekPoints}</span>
+              <span>This Month: +{monthPoints}</span>
+            </div>
+            <button className="mt-2 flex items-center gap-1 text-xs text-emerald-400 hover:underline">
+              View Details
+              <ChevronRight className="h-3 w-3" />
+            </button>
           </div>
-          <p className="text-2xl font-bold text-[#10B981]">+{todayPoints}</p>
-          <p className="text-xs text-white/50">Total Points</p>
-          <div className="mt-2 flex gap-3 text-xs text-white/60">
-            <span>This Week: +{weekPoints}</span>
-            <span>This Month: +{monthPoints}</span>
-          </div>
-          <button className="mt-2 flex items-center gap-1 text-xs text-[#10B981] hover:underline">
-            View Details
-            <ChevronRight className="h-3 w-3" />
-          </button>
         </div>
 
-        <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 px-3 py-2.5 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white">
+        <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-white">
           <Headphones className="h-4 w-4" />
           Need Help?
         </button>
@@ -110,7 +113,7 @@ export function Sidebar() {
       <Button
         variant="outline"
         size="icon"
-        className="fixed left-4 top-4 z-50 bg-white lg:hidden"
+        className="fixed left-4 top-4 z-50 border-white/20 bg-white/10 text-white backdrop-blur-sm lg:hidden"
         onClick={() => setMobileOpen(!mobileOpen)}
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -125,7 +128,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col bg-[#004D2C] text-white transition-transform duration-300",
+          "fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/15 bg-white/[0.08] shadow-[4px_0_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-transform duration-300",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
