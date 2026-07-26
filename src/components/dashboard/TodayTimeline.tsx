@@ -32,13 +32,13 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const colorMap: Record<string, string> = {
-  present: "bg-emerald-50 text-emerald-600",
-  work_start: "bg-blue-50 text-blue-600",
-  update: "bg-emerald-50 text-emerald-600",
-  break_start: "bg-orange-50 text-orange-600",
-  break_end: "bg-orange-50 text-orange-600",
-  missed: "bg-red-50 text-red-600",
-  project: "bg-purple-50 text-purple-600",
+  present: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+  work_start: "bg-sky-500/20 text-sky-400 border border-sky-500/30",
+  update: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+  break_start: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+  break_end: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
+  missed: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
+  project: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
 };
 
 const filterMap: Record<string, TimelineEvent["type"][] | null> = {

@@ -82,15 +82,15 @@ export default function BreaksPage() {
       <div className="page-grid lg:grid-cols-2">
         <div className="panel-card">
           <div className="mb-2 flex items-center gap-2">
-            <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-600">ON BREAK</span>
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-400">ON BREAK</span>
           </div>
           <div className="flex items-start gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50">
-              <Coffee className="h-6 w-6 text-orange-500" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/20">
+              <Coffee className="h-6 w-6 text-amber-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-base font-semibold text-white">{currentBreak.label}</h3>
-              <span className="mt-0.5 inline-block rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 capitalize">
+              <span className="mt-0.5 inline-block rounded-md border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-400 capitalize">
                 {currentBreak.type}
               </span>
               <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
@@ -108,7 +108,7 @@ export default function BreaksPage() {
               </p>
             </div>
           </div>
-          <Button className="mt-3 w-full bg-[#059669] hover:bg-[#047857]">End Break</Button>
+          <Button className="mt-3 w-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900 hover:border-emerald-700/80 shadow-[inset_0_-2px_0_0_#059669]">End Break</Button>
         </div>
 
         <div className="panel-card">

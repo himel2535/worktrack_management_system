@@ -1,9 +1,11 @@
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { CurrentWorkWidget } from "@/components/dashboard/CurrentWorkWidget";
-import { TodaySummary } from "@/components/dashboard/TodaySummary";
-import { TodayTimeline } from "@/components/dashboard/TodayTimeline";
-import { MyTasksWidget } from "@/components/dashboard/MyTasksWidget";
+import dynamic from "next/dynamic";
+
+const TodaySummary = dynamic(() => import("@/components/dashboard/TodaySummary").then((mod) => mod.TodaySummary));
+const TodayTimeline = dynamic(() => import("@/components/dashboard/TodayTimeline").then((mod) => mod.TodayTimeline));
+const MyTasksWidget = dynamic(() => import("@/components/dashboard/MyTasksWidget").then((mod) => mod.MyTasksWidget));
 import { dashboardStats } from "@/lib/mock-data/work-session";
 import { Timer, Coffee, ClipboardCheck, Star, CalendarCheck } from "lucide-react";
 

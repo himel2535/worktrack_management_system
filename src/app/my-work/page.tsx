@@ -39,7 +39,7 @@ function formatTime(seconds: number): string {
 
 const quickActionTones = {
   emerald:
-    "border-emerald-400/35 bg-emerald-400/30 hover:bg-emerald-600/55 hover:border-emerald-400/50",
+    "border-emerald-800/60 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669]",
   amber:
     "border-amber-400/35 bg-amber-400/30 hover:bg-amber-600/55 hover:border-amber-400/50",
   sky: "border-sky-400/35 bg-sky-400/30 hover:bg-blue-600/55 hover:border-sky-400/50",

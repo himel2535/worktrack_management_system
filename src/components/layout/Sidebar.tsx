@@ -100,7 +100,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-sm text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-white">
+        <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 border-b-[3.5px] border-b-black/60 bg-white/10 px-3 py-2.5 text-sm text-white shadow-[0_6px_14px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-all duration-150 hover:-translate-y-0.5 hover:bg-white/15 hover:shadow-[0_8px_18px_rgba(0,0,0,0.55)] active:translate-y-1 active:border-b-transparent active:shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
           <Headphones className="h-4 w-4" />
           Need Help?
         </button>

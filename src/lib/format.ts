@@ -22,24 +22,24 @@ export function getCurrentTime(): string {
 }
 
 export const statusColors = {
-  todo: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
-  in_progress: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
-  review: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
-  completed: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
-  pending: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
-  present: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
-  late: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
-  absent: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
-  on_time: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
-  missed: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
-  upcoming: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
-  submitted: { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" },
+  todo: { bg: "bg-sky-500/15", text: "text-sky-400", border: "border-sky-500/30" },
+  in_progress: { bg: "bg-amber-500/15", text: "text-amber-400", border: "border-amber-500/30" },
+  review: { bg: "bg-purple-500/15", text: "text-purple-400", border: "border-purple-500/30" },
+  completed: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" },
+  pending: { bg: "bg-amber-500/15", text: "text-amber-400", border: "border-amber-500/30" },
+  present: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" },
+  late: { bg: "bg-amber-500/15", text: "text-amber-400", border: "border-amber-500/30" },
+  absent: { bg: "bg-rose-500/15", text: "text-rose-400", border: "border-rose-500/30" },
+  on_time: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" },
+  missed: { bg: "bg-rose-500/15", text: "text-rose-400", border: "border-rose-500/30" },
+  upcoming: { bg: "bg-sky-500/15", text: "text-sky-400", border: "border-sky-500/30" },
+  submitted: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" },
 };
 
 export const priorityColors = {
-  high: { bg: "bg-red-50", text: "text-red-600" },
-  medium: { bg: "bg-orange-50", text: "text-orange-600" },
-  low: { bg: "bg-green-50", text: "text-green-600" },
+  high: { bg: "bg-rose-500/15", text: "text-rose-400", border: "border-rose-500/30" },
+  medium: { bg: "bg-amber-500/15", text: "text-amber-400", border: "border-amber-500/30" },
+  low: { bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/30" },
 };
 
 export const statusLabels: Record<string, string> = {

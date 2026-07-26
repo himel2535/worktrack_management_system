@@ -217,7 +217,7 @@ export default function TasksPage() {
                 </div>
               )}
 
-              <Button className="mt-3 w-full gap-2 bg-[#059669] hover:bg-[#047857]">
+              <Button className="mt-3 w-full gap-2 bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900 hover:border-emerald-700/80 shadow-[inset_0_-2px_0_0_#059669]">
                 <Play className="h-4 w-4" />
                 Start Work
               </Button>

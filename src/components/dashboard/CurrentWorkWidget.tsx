@@ -213,21 +213,21 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-sky-400/35 bg-sky-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-sky-400/50 hover:bg-blue-600/55 hover:text-white"
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#10B981] active:translate-y-0.5"
         >
           <Pencil className="h-4 w-4" />
           Submit Update
         </button>
         <button
           type="button"
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-amber-400/35 bg-amber-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-amber-400/50 hover:bg-amber-600/55 hover:text-white"
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#F59E0B] active:translate-y-0.5"
         >
           <Coffee className="h-4 w-4" />
           Take Break
         </button>
         <button
           type="button"
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-rose-400/35 bg-rose-400/30 py-2.5 text-sm font-medium text-white transition-colors hover:border-rose-400/50 hover:bg-red-600/55 hover:text-white"
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#EF4444] active:translate-y-0.5"
         >
           <Square className="h-4 w-4" />
           Stop Work

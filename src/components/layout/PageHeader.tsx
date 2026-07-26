@@ -39,7 +39,7 @@ export function PageHeader({
         {actionLabel && (
           <Button
             onClick={onAction}
-            className="gap-2 bg-[#059669] text-white hover:bg-[#047857]"
+            className="gap-2 bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900 hover:border-emerald-700/80 shadow-[inset_0_-2px_0_0_#059669]"
           >
             <Plus className="h-4 w-4" />
             {actionLabel}

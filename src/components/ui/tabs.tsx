@@ -58,10 +58,9 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-transparent px-3 py-2.5 text-sm font-medium whitespace-nowrap text-white/50 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:bg-white/10 hover:text-white focus-visible:bg-white/10 focus-visible:text-white focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "data-active:bg-white/10 data-active:text-white data-active:shadow-none",
+        "relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-transparent px-3.5 py-2 text-sm font-medium whitespace-nowrap text-white/50 transition-all duration-150 group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:bg-white/10 hover:text-white hover:-translate-y-0.5 active:translate-y-0.5 focus-visible:bg-white/10 focus-visible:text-white focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-active:bg-white/10 data-active:text-white data-active:shadow-[inset_0_-2px_0_0_#10B981]",
         "group-data-[variant=line]/tabs-list:border-0 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:px-3 group-data-[variant=line]/tabs-list:py-2 group-data-[variant=line]/tabs-list:data-active:bg-white/10 group-data-[variant=line]/tabs-list:data-active:shadow-[inset_0_-2px_0_0_#10B981]",
-        "after:absolute after:bg-emerald-500 after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=default]/tabs-list:data-active:after:opacity-100",
         className
       )}
       {...props}
