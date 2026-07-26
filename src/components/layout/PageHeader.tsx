@@ -9,6 +9,7 @@ interface PageHeaderProps {
   greeting?: string;
   actionLabel?: string;
   onAction?: () => void;
+  onActionClick?: () => void;
   showClock?: boolean;
   dateLabel?: string;
   children?: ReactNode;
@@ -20,10 +21,13 @@ export function PageHeader({
   greeting,
   actionLabel,
   onAction,
+  onActionClick,
   showClock = true,
   dateLabel,
   children,
 }: PageHeaderProps) {
+  const handleAction = onActionClick || onAction;
+
   return (
     <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div>
@@ -38,7 +42,7 @@ export function PageHeader({
         <TopBar showClock={showClock} dateLabel={dateLabel} />
         {actionLabel && (
           <Button
-            onClick={onAction}
+            onClick={handleAction}
             className="gap-2 bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900 hover:border-emerald-700/80 shadow-[inset_0_-2px_0_0_#059669]"
           >
             <Plus className="h-4 w-4" />

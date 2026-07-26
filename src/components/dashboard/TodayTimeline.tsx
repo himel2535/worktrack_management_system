@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PointsIndicator } from "@/components/shared/PointsIndicator";
-import { todayTimeline } from "@/lib/mock-data/timeline";
+import { useWorkTrack } from "@/context/WorkTrackContext";
 import { TimelineEvent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -141,23 +141,23 @@ function TimelineEntry({
   );
 }
 
-const TIMELINE_PREVIEW_COUNT = 6;
-
 interface TodayTimelineProps {
   theme?: "light" | "glass";
 }
 
 export function TodayTimeline({ theme = "glass" }: TodayTimelineProps) {
   const isGlass = theme === "glass";
+  const { timeline } = useWorkTrack();
   const [filter, setFilter] = useState("all");
 
-  return (
-    <div className="relative overflow-hidden panel-card">
-      {isGlass && (
-        <div className="pointer-events-none absolute right-0 top-8 h-48 w-24 bg-gradient-to-b from-cyan-400/20 via-blue-500/10 to-transparent blur-2xl" />
-      )}
+  const allowedTypes = filterMap[filter];
+  const filteredEvents = allowedTypes
+    ? timeline.filter((e) => allowedTypes.includes(e.type))
+    : timeline;
 
-      <div className="relative mb-2 flex items-center justify-between">
+  return (
+    <div className="panel-card flex h-full flex-col">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
           Today&apos;s Timeline
         </h3>
@@ -205,22 +205,27 @@ function TimelineList({
   filter: string;
   isGlass?: boolean;
 }) {
+  const { timeline } = useWorkTrack();
   const allowedTypes = filterMap[filter] ?? null;
   const filtered = allowedTypes
-    ? todayTimeline.filter((e) => allowedTypes.includes(e.type))
-    : todayTimeline;
-  const previewEvents = filtered.slice(0, TIMELINE_PREVIEW_COUNT);
+    ? timeline.filter((e) => allowedTypes.includes(e.type))
+    : timeline;
+  const previewEvents = filtered.slice(0, 6);
 
   return (
     <div>
-      {previewEvents.map((event, index) => (
-        <TimelineEntry
-          key={event.id}
-          event={event}
-          isLast={index === previewEvents.length - 1}
-          isGlass={isGlass}
-        />
-      ))}
+      {previewEvents.length === 0 ? (
+        <p className="py-4 text-center text-xs text-white/40">No activity found.</p>
+      ) : (
+        previewEvents.map((event, index) => (
+          <TimelineEntry
+            key={event.id}
+            event={event}
+            isLast={index === previewEvents.length - 1}
+            isGlass={isGlass}
+          />
+        ))
+      )}
     </div>
   );
 }

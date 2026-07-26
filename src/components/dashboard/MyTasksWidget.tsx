@@ -1,15 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { tasks } from "@/lib/mock-data/tasks";
+import { useWorkTrack } from "@/context/WorkTrackContext";
 import { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-const iconStyles = {
-  green: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  orange: "bg-orange-50 text-orange-600 border-orange-200",
-  blue: "bg-blue-50 text-blue-600 border-blue-200",
-} as const;
 
 const glassIconStyles = {
   green: "bg-emerald-500/20 text-emerald-400 border-emerald-400/30",
@@ -19,13 +15,10 @@ const glassIconStyles = {
 
 function TaskIcon({
   color,
-  isGlass,
 }: {
   color: Task["iconColor"];
-  isGlass?: boolean;
 }) {
-  const styles = isGlass ? glassIconStyles : iconStyles;
-  const style = styles[color ?? "green"];
+  const style = glassIconStyles[color ?? "green"];
   return (
     <div
       className={cn(
@@ -41,11 +34,9 @@ function TaskIcon({
 function DeadlineText({
   deadline,
   deadlineLabel,
-  isGlass,
 }: {
   deadline: string;
   deadlineLabel?: string;
-  isGlass?: boolean;
 }) {
   const isToday = deadlineLabel?.toLowerCase().includes("today");
   let label = "Today";
@@ -53,8 +44,7 @@ function DeadlineText({
     if (deadlineLabel) {
       label = deadlineLabel;
     } else {
-      const d = new Date(deadline);
-      label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      label = deadline;
     }
   }
 
@@ -62,11 +52,7 @@ function DeadlineText({
     <span
       className={cn(
         "shrink-0 text-xs font-medium",
-        isToday
-          ? "text-red-400"
-          : isGlass
-            ? "text-white/45"
-            : "text-slate-500"
+        isToday ? "text-red-400" : "text-white/45"
       )}
     >
       {label}
@@ -80,52 +66,57 @@ interface MyTasksWidgetProps {
 
 export function MyTasksWidget({ theme = "glass" }: MyTasksWidgetProps) {
   const isGlass = theme === "glass";
-  const myTasks = tasks.filter((t) => t.status !== "completed").slice(0, 3);
+  const { tasks, openTaskModal } = useWorkTrack();
+  const myTasks = tasks.filter((t) => t.status !== "completed").slice(0, 4);
 
   return (
     <div className="panel-card">
       <div className="mb-2 flex items-center justify-between">
         <h3 className={cn(isGlass ? "panel-title-glass mb-0" : "panel-title mb-0")}>
-          My Tasks
+          My Tasks ({myTasks.length})
         </h3>
-        <Link
-          href="/tasks"
-          className="text-xs font-medium text-emerald-400 hover:underline"
-        >
-          View All
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => openTaskModal()}
+            className="flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Task
+          </button>
+          <Link
+            href="/tasks"
+            className="text-xs font-medium text-white/50 hover:text-white"
+          >
+            View All
+          </Link>
+        </div>
       </div>
       <div>
-        {myTasks.map((task) => (
-          <div
-            key={task.id}
-            className={cn(
-              "flex items-center gap-2.5 py-2 last:border-0",
-              isGlass ? "border-b border-white/10" : "border-b border-slate-100"
-            )}
-          >
-            <TaskIcon color={task.iconColor} isGlass={isGlass} />
-            <div className="min-w-0 flex-1">
-              <p
-                className={cn(
-                  "truncate text-sm font-medium",
-                  isGlass ? "text-white" : "text-slate-800"
-                )}
-              >
-                {task.title}
-              </p>
-              <p className="truncate text-xs text-emerald-400">
-                {task.projectName}
-              </p>
+        {myTasks.length === 0 ? (
+          <p className="py-4 text-center text-xs text-white/40">No pending tasks!</p>
+        ) : (
+          myTasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center gap-2.5 py-2 border-b border-white/10 last:border-0"
+            >
+              <TaskIcon color={task.iconColor} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-white">
+                  {task.title}
+                </p>
+                <p className="truncate text-xs text-emerald-400">
+                  {task.projectName}
+                </p>
+              </div>
+              <StatusBadge status={task.status} />
+              <DeadlineText
+                deadline={task.deadline}
+                deadlineLabel={task.deadlineLabel}
+              />
             </div>
-            <StatusBadge status={task.status} />
-            <DeadlineText
-              deadline={task.deadline}
-              deadlineLabel={task.deadlineLabel}
-              isGlass={isGlass}
-            />
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

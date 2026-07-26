@@ -9,17 +9,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-white/10 text-white shadow-[inset_0_-2px_0_0_#10B981] hover:bg-white/15",
+          "bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700/80 font-bold",
         outline:
-          "bg-white/10 text-white shadow-[inset_0_-2px_0_0_#10B981] hover:bg-white/15 aria-expanded:bg-white/15",
+          "bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900/80 hover:border-emerald-700/80 aria-expanded:bg-emerald-900/80",
         secondary:
-          "bg-white/10 text-white shadow-[inset_0_-2px_0_0_#10B981] hover:bg-white/15 aria-expanded:bg-white/15",
+          "bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700/80 aria-expanded:bg-emerald-900",
         glass:
-          "bg-white/10 text-white shadow-[inset_0_-2px_0_0_#10B981] hover:bg-white/15",
+          "bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700/80 font-bold",
         ghost:
           "text-white/70 hover:bg-white/10 hover:text-white aria-expanded:bg-white/10",
         destructive:
-          "bg-white/10 text-destructive shadow-[inset_0_-2px_0_0_#EF4444] hover:bg-white/15",
+          "bg-rose-950/90 text-rose-300 border border-rose-800/70 shadow-[inset_0_-2px_0_0_#EF4444] hover:bg-rose-900 hover:border-rose-700/80",
         link: "text-emerald-400 underline-offset-4 hover:underline",
       },
       size: {

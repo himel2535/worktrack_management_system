@@ -1,22 +1,16 @@
+"use client";
+
 import { DonutChart } from "@/components/charts/DonutChart";
 import { PerformanceGraph } from "@/components/dashboard/PerformanceGraph";
-import { productivityData } from "@/lib/mock-data/timeline";
-import { todaySummary } from "@/lib/mock-data/work-session";
+import { useWorkTrack } from "@/context/WorkTrackContext";
 import { cn } from "@/lib/utils";
 
-const summaryRows = [
-  { label: "Office Time", value: todaySummary.officeTimeRange },
-  { label: "Total Office Time", value: todaySummary.totalOfficeTime },
-  {
-    label: "Active Work Time",
-    value: todaySummary.activeWorkTime,
-    highlight: true,
-  },
-  { label: "Total Break Time", value: todaySummary.totalBreakTime },
-  { label: "Break Count", value: todaySummary.breakCount },
-  { label: "Projects Worked", value: todaySummary.projectsWorked },
-  { label: "Tasks Completed", value: todaySummary.tasksCompleted },
-];
+function formatHMS(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
+}
 
 interface TodaySummaryProps {
   theme?: "light" | "glass";
@@ -24,6 +18,31 @@ interface TodaySummaryProps {
 
 export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
   const isGlass = theme === "glass";
+  const { activeWorkSeconds, activeBreakSeconds, breaks, tasks, projects } = useWorkTrack();
+
+  const totalBreakSecs = breaks.reduce((acc, b) => {
+    const parts = b.duration.split(":").map(Number);
+    if (parts.length === 3) return acc + parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return acc;
+  }, 0) + activeBreakSeconds;
+
+  const totalOfficeSecs = activeWorkSeconds + totalBreakSecs;
+  const workPercent = totalOfficeSecs > 0 ? Math.round((activeWorkSeconds / totalOfficeSecs) * 100) : 100;
+
+  const summaryRows = [
+    { label: "Office Time", value: "09:00 AM - Present" },
+    { label: "Total Office Time", value: formatHMS(totalOfficeSecs) },
+    { label: "Active Work Time", value: formatHMS(activeWorkSeconds), highlight: true },
+    { label: "Total Break Time", value: formatHMS(totalBreakSecs) },
+    { label: "Break Count", value: breaks.length },
+    { label: "Projects Worked", value: projects.length },
+    { label: "Tasks Completed", value: tasks.filter((t) => t.status === "completed").length },
+  ];
+
+  const productivityChartData = [
+    { name: "Active Work Time", value: Math.max(1, activeWorkSeconds), color: "#10B981" },
+    { name: "Break Time", value: Math.max(0, totalBreakSecs), color: "#F59E0B" },
+  ];
 
   return (
     <div className="panel-card">
@@ -60,8 +79,8 @@ export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
           <DonutChart
             variant="productivity"
             theme={isGlass ? "dark" : "light"}
-            data={productivityData}
-            centerValue={`${todaySummary.productiveTime}%`}
+            data={productivityChartData}
+            centerValue={`${workPercent}%`}
             centerLabel="Productive Time"
             showLegend
             height={210}

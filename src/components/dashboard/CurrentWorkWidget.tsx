@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Monitor, Pencil, Coffee, Square, AlarmClock } from "lucide-react";
+import { Monitor, Pencil, Coffee, Play, Pause, AlarmClock } from "lucide-react";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { activeWorkSession } from "@/lib/mock-data/work-session";
+import { useWorkTrack } from "@/context/WorkTrackContext";
 import { cn } from "@/lib/utils";
-
-function parseTime(time: string): number {
-  const parts = time.split(":").map(Number);
-  return parts[0] * 3600 + parts[1] * 60 + parts[2];
-}
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -41,24 +36,33 @@ interface CurrentWorkWidgetProps {
 
 export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
   const isGlass = theme === "glass";
-  const [workTime, setWorkTime] = useState(
-    parseTime(activeWorkSession.totalWorkTime)
-  );
-  const [countdown, setCountdown] = useState(
-    parseTime(activeWorkSession.nextUpdateDueIn)
-  );
+  const {
+    workSession,
+    isWorkTimerRunning,
+    activeWorkSeconds,
+    startWorkSession,
+    pauseWorkSession,
+    openBreakModal,
+    openHourlyUpdateModal,
+    activeBreak,
+  } = useWorkTrack();
 
-  const elapsedMinutes = Math.round(
-    (activeWorkSession.updateProgress / 100) * 60
-  );
+  const [countdown, setCountdown] = useState(1338); // 22:18 countdown
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWorkTime((t) => t + 1);
-      setCountdown((t) => (t > 0 ? t - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    let interval: NodeJS.Timeout | null = null;
+    if (isWorkTimerRunning && !activeBreak) {
+      interval = setInterval(() => {
+        setCountdown((t) => (t > 0 ? t - 1 : 3600));
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isWorkTimerRunning, activeBreak]);
+
+  const elapsedMinutes = Math.floor((3600 - countdown) / 60);
+  const updateProgress = Math.min(100, Math.round(((3600 - countdown) / 3600) * 100));
 
   return (
     <div className="panel-card">
@@ -67,14 +71,27 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
           Current Work
         </h3>
         <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span
+            className={cn(
+              "h-2 w-2 rounded-full",
+              activeBreak
+                ? "bg-amber-400 animate-pulse"
+                : isWorkTimerRunning
+                ? "bg-emerald-500 animate-pulse"
+                : "bg-slate-500"
+            )}
+          />
           <span
             className={cn(
               "text-sm font-medium",
-              isGlass ? "text-emerald-400" : "text-emerald-600"
+              activeBreak
+                ? "text-amber-400"
+                : isWorkTimerRunning
+                ? "text-emerald-400"
+                : "text-slate-400"
             )}
           >
-            Working
+            {activeBreak ? "On Break" : isWorkTimerRunning ? "Working" : "Paused"}
           </span>
         </div>
       </div>
@@ -98,14 +115,14 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
                 isGlass ? "text-white" : "text-slate-900"
               )}
             >
-              {activeWorkSession.projectName}
+              {workSession.projectName}
             </p>
             <p className="text-sm">
               <span className={isGlass ? "text-white/50" : "text-slate-500"}>
                 Task:{" "}
               </span>
               <span className="font-semibold text-emerald-400">
-                {activeWorkSession.taskName}
+                {workSession.taskName}
               </span>
             </p>
             <div
@@ -124,7 +141,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
                     isGlass ? "text-white" : "text-slate-800"
                   )}
                 >
-                  {activeWorkSession.startedAt}
+                  {workSession.startedAt}
                 </p>
               </div>
               <div
@@ -143,7 +160,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
                     isGlass ? "text-white" : "text-slate-800"
                   )}
                 >
-                  {activeWorkSession.estimatedEnd}
+                  {workSession.estimatedEnd}
                 </p>
               </div>
             </div>
@@ -154,7 +171,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
 
         <div className="shrink-0 text-right">
           <p className="text-3xl font-bold tabular-nums text-emerald-400">
-            {formatTime(workTime)}
+            {formatTime(activeWorkSeconds)}
           </p>
           <p className={cn("text-xs", isGlass ? "text-white/50" : "text-slate-500")}>
             Working Time
@@ -167,7 +184,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
                 : "bg-white/70 text-emerald-700"
             )}
           >
-            Since {activeWorkSession.startedAt}
+            Since {workSession.startedAt}
           </span>
         </div>
       </div>
@@ -193,7 +210,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
         <div className="max-w-[220px] flex-1">
           <div className="h-2">
             <ProgressBar
-              value={activeWorkSession.updateProgress}
+              value={updateProgress}
               className="h-full w-full"
               barClassName="bg-[#059669]"
               trackClassName={isGlass ? "bg-white/10" : undefined}
@@ -213,25 +230,39 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#10B981] active:translate-y-0.5"
+          onClick={openHourlyUpdateModal}
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-800/80 px-4 py-2.5 text-sm font-bold transition-all duration-150 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] active:translate-y-0.5"
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-4 w-4 text-emerald-300" />
           Submit Update
         </button>
         <button
           type="button"
+          onClick={openBreakModal}
           className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#F59E0B] active:translate-y-0.5"
         >
-          <Coffee className="h-4 w-4" />
+          <Coffee className="h-4 w-4 text-amber-400" />
           Take Break
         </button>
-        <button
-          type="button"
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#EF4444] active:translate-y-0.5"
-        >
-          <Square className="h-4 w-4" />
-          Stop Work
-        </button>
+        {isWorkTimerRunning ? (
+          <button
+            type="button"
+            onClick={pauseWorkSession}
+            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#EF4444] active:translate-y-0.5"
+          >
+            <Pause className="h-4 w-4 text-rose-400" />
+            Pause Work
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={startWorkSession}
+            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-800/80 px-4 py-2.5 text-sm font-bold transition-all duration-150 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] active:translate-y-0.5"
+          >
+            <Play className="h-4 w-4 text-emerald-300 fill-emerald-300" />
+            Resume Work
+          </button>
+        )}
       </div>
     </div>
   );

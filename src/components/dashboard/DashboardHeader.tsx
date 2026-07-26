@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, Calendar } from "lucide-react";
 import { getCurrentTime, getGreeting, formatDate } from "@/lib/format";
-import { currentUser } from "@/lib/mock-data/user";
+import { useWorkTrack } from "@/context/WorkTrackContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -12,12 +12,13 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
+  const { user } = useWorkTrack();
   const [time, setTime] = useState("10:45 AM");
   const isGlass = theme === "glass";
 
   useEffect(() => {
     setTime(getCurrentTime());
-    const interval = setInterval(() => setTime(getCurrentTime()), 60000);
+    const interval = setInterval(() => setTime(getCurrentTime()), 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -30,7 +31,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
             isGlass ? "text-white" : "text-slate-800"
           )}
         >
-          {getGreeting()}, Himel 👋
+          {getGreeting()}, {user.name} 👋
         </h1>
         <p
           className={cn(
@@ -100,8 +101,8 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
               isGlass ? "border-white/20" : "border-white"
             )}
           >
-            <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-            <AvatarFallback>HH</AvatarFallback>
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="hidden sm:block">
             <p
@@ -110,7 +111,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
                 isGlass ? "text-white" : "text-slate-800"
               )}
             >
-              {currentUser.name}
+              {user.name}
             </p>
             <p
               className={cn(
@@ -118,7 +119,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
                 isGlass ? "text-white/50" : "text-slate-500"
               )}
             >
-              {currentUser.role}
+              {user.role}
             </p>
           </div>
         </div>
