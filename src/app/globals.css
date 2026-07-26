@@ -152,11 +152,11 @@
   }
 
   .glass-card {
-    @apply rounded-2xl border border-white/10 bg-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl;
+    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-[#131B2E] shadow-[0_8px_32px_rgba(0,0,0,0.3)];
   }
 
   .panel-card {
-    @apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur-xl;
+    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-[#131B2E] px-4 py-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
   }
 
   .panel-title {
@@ -168,11 +168,11 @@
   }
 
   .glass-card-inner {
-    @apply rounded-xl border border-white/10 bg-white/5;
+    @apply relative overflow-hidden rounded-xl border border-white/10 bg-[#1A2338];
   }
 
   .glass-stat-card {
-    @apply rounded-2xl border border-white/10 bg-white/[0.06] p-3.5 backdrop-blur-md;
+    @apply relative overflow-hidden rounded-2xl border border-white/10 bg-[#131B2E] p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)];
   }
 
   .glass-sidebar {

@@ -113,7 +113,7 @@ export function DonutChart({
       {/* 3D Outer Beveled Ring Container */}
       <div className="relative flex w-full items-center justify-center p-1.5" style={{ height: chartHeight }}>
         {/* Outer 3D Bevel & Ambient Neon Glow Circle */}
-        <div className="pointer-events-none absolute inset-1.5 rounded-full border border-white/15 bg-slate-950/70 shadow-[inset_0_4px_10px_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-xl" />
+        <div className="pointer-events-none absolute inset-1.5 rounded-full border border-white/15 bg-slate-950/90 shadow-[inset_0_4px_10px_rgba(255,255,255,0.12),0_10px_28px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.25)]" />
 
         {/* Inner HUD Circular Tech Dash Ring */}
         <div className="pointer-events-none absolute inset-[16%] rounded-full border border-dashed border-emerald-400/25" />
@@ -174,7 +174,7 @@ export function DonutChart({
 
         {/* Center Label Pill Badge */}
         {centerLabel && (
-          <div className="pointer-events-none absolute left-1/2 top-[calc(50%+24px)] -translate-x-1/2 rounded-lg border border-white/20 bg-slate-900/95 px-2.5 py-0.5 text-center shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)] backdrop-blur-md">
+          <div className="pointer-events-none absolute left-1/2 top-[calc(50%+24px)] -translate-x-1/2 rounded-lg border border-white/20 bg-slate-900 px-2.5 py-0.5 text-center shadow-[0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.2)]">
             <span className="block text-[9px] font-bold uppercase tracking-wider text-white/80">
               {centerLabel}
             </span>
@@ -184,7 +184,7 @@ export function DonutChart({
 
       {/* Futuristic 3D Glassmorphism Legend HUD Card */}
       {showLegend && (
-        <div className="mt-3.5 flex w-full flex-col gap-2 rounded-xl border border-white/15 bg-slate-950/80 p-3 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)]">
+        <div className="mt-3.5 flex w-full flex-col gap-2 rounded-xl border border-white/15 bg-slate-950/90 p-3 shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)]">
           {data.map((entry, index) => (
             <div key={entry.name} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">

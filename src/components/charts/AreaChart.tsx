@@ -40,12 +40,13 @@ export function AreaChart({
         <XAxis dataKey="period" tick={{ fontSize: 11, fill: tickFill }} />
         <YAxis tick={{ fontSize: 11, fill: tickFill }} unit="h" />
         <Tooltip
+          cursor={{ stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, strokeDasharray: "4 4" }}
           formatter={(value) => [`${value}h`, "Break Time"]}
           contentStyle={
             isDark
               ? {
-                  backgroundColor: "rgba(15,23,42,0.9)",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(15,23,42,0.95)",
+                  border: "1px solid rgba(255,255,255,0.15)",
                   borderRadius: 8,
                   color: "#fff",
                 }

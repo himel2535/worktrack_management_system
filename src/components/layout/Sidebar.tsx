@@ -128,7 +128,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/15 bg-white/[0.08] shadow-[4px_0_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-transform duration-300",
+          "fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/10 bg-[#0D1527] shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-transform duration-300",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
