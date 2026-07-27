@@ -2,19 +2,24 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { apiFetch, setToken, clearToken, AuthUser } from "@/lib/api/client";
-
 import { DEMO_PASSWORD, isDemoUserEmail, isDemoModeEnabled } from "@/lib/demoUsers";
 
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, designation?: string, departmentId?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   switchDemoUser: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+async function applyAuthResponse(data: { accessToken: string; user: AuthUser }) {
+  setToken(data.accessToken);
+  return data.user;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -44,8 +49,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
-    setToken(data.accessToken);
-    setUser(data.user);
+    setUser(await applyAuthResponse(data));
+  };
+
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    designation?: string,
+    departmentId?: string
+  ) => {
+    const data = await apiFetch<{ accessToken: string; user: AuthUser }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password, designation, departmentId }),
+    });
+    setUser(await applyAuthResponse(data));
   };
 
   const logout = async () => {
@@ -70,7 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser, switchDemoUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshUser, switchDemoUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

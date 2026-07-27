@@ -81,13 +81,21 @@ export default function AdminUsersPage() {
       <div className="grid grid-cols-12 items-start gap-3">
         <div className="col-span-12 lg:col-span-8">
           <AdminPanel title={`All Users (${users.length})`}>
+            <div className="hidden items-center gap-3 border-b border-white/10 px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/35 md:flex">
+              <span className="min-w-0 flex-1">User</span>
+              <span className="w-20 text-center sm:inline">Role</span>
+              <span className="hidden w-28 lg:inline">Designation</span>
+              <span className="hidden w-24 lg:inline">Department</span>
+              <span className="w-14 text-center">Status</span>
+              <span className="w-8" />
+            </div>
             <div className="space-y-1">
               {users.map((u) => (
                 <div
                   key={u._id}
                   className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-white/10 hover:bg-white/[0.04]"
                 >
-                  <Avatar className="h-9 w-9 border border-white/10">
+                  <Avatar className="h-9 w-9 shrink-0 border border-white/10">
                     <AvatarFallback className="bg-emerald-950 text-emerald-400 text-xs">
                       {u.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -96,15 +104,20 @@ export default function AdminUsersPage() {
                     <p className="truncate text-sm font-medium text-white">{u.name}</p>
                     <p className="truncate text-xs text-white/45">{u.email}</p>
                   </div>
-                  <span className={cn("hidden rounded-full border px-2 py-0.5 text-xs capitalize sm:inline-flex", roleBadge(u.role))}>
+                  <span className={cn("hidden w-20 shrink-0 justify-center rounded-full border px-2 py-0.5 text-xs capitalize sm:inline-flex", roleBadge(u.role))}>
                     {u.role}
                   </span>
-                  <span className="hidden text-xs text-white/50 md:inline">{u.departmentId?.name || "—"}</span>
-                  <span className={cn("text-xs font-medium", u.isActive ? "text-emerald-400" : "text-red-400")}>
+                  <span className="hidden w-28 shrink-0 truncate text-xs text-white/50 lg:inline" title={u.designation || "Employee"}>
+                    {u.designation || "Employee"}
+                  </span>
+                  <span className="hidden w-24 shrink-0 truncate text-xs text-white/50 lg:inline" title={u.departmentId?.name || "Unassigned"}>
+                    {u.departmentId?.name || "—"}
+                  </span>
+                  <span className={cn("w-14 shrink-0 text-center text-xs font-medium", u.isActive ? "text-emerald-400" : "text-red-400")}>
                     {u.isActive ? "Active" : "Inactive"}
                   </span>
                   {u.isActive && u.role !== "admin" && (
-                    <button onClick={() => deactivate(u._id)} className="text-red-400 hover:text-red-300">
+                    <button onClick={() => deactivate(u._id)} className="w-8 shrink-0 text-red-400 hover:text-red-300">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}

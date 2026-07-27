@@ -5,16 +5,19 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 
+const PUBLIC_AUTH_PATHS = ["/login", "/register"];
+
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const isPublicAuth = PUBLIC_AUTH_PATHS.includes(pathname);
 
   useEffect(() => {
-    if (!loading && !user && pathname !== "/login") {
+    if (!loading && !user && !isPublicAuth) {
       router.replace("/login");
     }
-    if (!loading && user && pathname === "/login") {
+    if (!loading && user && isPublicAuth) {
       router.replace("/");
     }
     if (!loading && user) {
@@ -25,7 +28,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace("/");
       }
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, pathname, router, isPublicAuth]);
 
   if (loading) {
     return (
@@ -35,7 +38,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && pathname !== "/login") return null;
+  if (!user && !isPublicAuth) return null;
 
   return <>{children}</>;
 }

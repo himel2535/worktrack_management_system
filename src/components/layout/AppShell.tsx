@@ -8,11 +8,11 @@ import { GlobalModals } from "@/components/modals/GlobalModals";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLogin = pathname === "/login";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   return (
     <AuthGuard>
-      {isLogin ? (
+      {isAuthPage ? (
         children
       ) : (
         <WorkTrackProvider>

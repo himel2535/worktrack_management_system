@@ -52,7 +52,24 @@ export async function apiFetch<T = unknown>(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || "Request failed");
+    const message =
+      typeof err.error === "string"
+        ? err.error
+        : typeof err.message === "string"
+          ? err.message
+          : "Request failed";
+
+    if (res.status === 404 && path.includes("/auth/register")) {
+      throw new Error(
+        "Registration is not available on the server yet. Please redeploy the backend with the latest API."
+      );
+    }
+
+    if (res.status === 404 && message === "Not found") {
+      throw new Error("The requested API endpoint was not found. The server may need to be updated.");
+    }
+
+    throw new Error(message);
   }
 
   const contentType = res.headers.get("content-type") || "";

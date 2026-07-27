@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Timer, Mail, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState("himel@worktrack.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -58,9 +60,8 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-white/70">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-              <Input
-                type="password"
+              <Lock className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white"
@@ -79,6 +80,13 @@ export default function LoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
+
+          <p className="text-center text-sm text-white/50">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-medium text-emerald-400 hover:underline">
+              Create an account
+            </Link>
+          </p>
 
           <div className="border-t border-white/10 pt-4 text-xs text-white/40 space-y-1">
             <p>Demo accounts (password: password123):</p>

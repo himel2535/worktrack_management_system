@@ -26,7 +26,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full antialiased dark`}>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${inter.variable} h-full antialiased dark`}>
       <body suppressHydrationWarning className="min-h-full bg-gradient-to-br from-[#0B1220] via-[#111827] to-[#0F172A] font-sans text-[#E2E8F0]">
         <ThemeProviderWrapper>
           <QueryProvider>
