@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+import { dashboardOfficePointsData } from "@/lib/mock-data/performance";
 import {
   AreaChart as RechartsAreaChart,
   Area,
@@ -10,9 +12,13 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { dashboardOfficePointsData } from "@/lib/mock-data/performance";
+import { useChartAnimationOnce, DONUT_CHART_ANIMATION_DURATION } from "@/hooks/useChartAnimationOnce";
 
-export function PerformanceGraph() {
+export const PerformanceGraph = memo(function PerformanceGraph() {
+  const { isAnimationActive, onAnimationEnd, animationDuration } = useChartAnimationOnce(
+    DONUT_CHART_ANIMATION_DURATION
+  );
+
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
       <div className="mb-2">
@@ -65,6 +71,11 @@ export function PerformanceGraph() {
             strokeWidth={2}
             fill="url(#officeGradient)"
             name="Office Points"
+            isAnimationActive={isAnimationActive}
+            animationDuration={animationDuration}
+            animationBegin={0}
+            animationEasing="ease-in-out"
+            onAnimationEnd={onAnimationEnd}
           />
           <Area
             type="monotone"
@@ -73,9 +84,13 @@ export function PerformanceGraph() {
             strokeWidth={2}
             fill="url(#benchmarkGradient)"
             name="Benchmark"
+            isAnimationActive={isAnimationActive}
+            animationDuration={animationDuration}
+            animationBegin={0}
+            animationEasing="ease-in-out"
           />
         </RechartsAreaChart>
       </ResponsiveContainer>
     </div>
   );
-}
+});

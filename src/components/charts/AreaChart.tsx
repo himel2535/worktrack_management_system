@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import {
   AreaChart as RechartsAreaChart,
   Area,
@@ -9,6 +10,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  useChartAnimationOnce,
+  DONUT_CHART_ANIMATION_DURATION,
+} from "@/hooks/useChartAnimationOnce";
 
 interface AreaChartProps {
   data: { period: string; hours: number }[];
@@ -24,12 +29,28 @@ export function AreaChart({
   theme = "dark",
 }: AreaChartProps) {
   const isDark = theme === "dark";
+  const { isAnimationActive, onAnimationEnd, animationDuration } = useChartAnimationOnce(
+    DONUT_CHART_ANIMATION_DURATION
+  );
+  const [chartData, setChartData] = useState(data);
+
+  const handleAnimationEnd = useCallback(() => {
+    onAnimationEnd();
+    setChartData(data);
+  }, [onAnimationEnd, data]);
+
+  useEffect(() => {
+    if (!isAnimationActive) {
+      setChartData(data);
+    }
+  }, [data, isAnimationActive]);
+
   const gridStroke = isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0";
   const tickFill = isDark ? "rgba(255,255,255,0.45)" : "#64748B";
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsAreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+      <RechartsAreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
         <defs>
           <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={color} stopOpacity={0.3} />
@@ -59,6 +80,11 @@ export function AreaChart({
           stroke={color}
           strokeWidth={2}
           fill="url(#areaGradient)"
+          isAnimationActive={isAnimationActive}
+          animationDuration={animationDuration}
+          animationBegin={0}
+          animationEasing="ease-in-out"
+          onAnimationEnd={handleAnimationEnd}
         />
       </RechartsAreaChart>
     </ResponsiveContainer>

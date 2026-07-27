@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { Monitor, Pencil, Coffee, Play, Pause, AlarmClock } from "lucide-react";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { useWorkTrack } from "@/context/WorkTrackContext";
+import { useWorkTrackWorkTimer } from "@/context/WorkTrackTimerContext";
 import { cn } from "@/lib/utils";
+
+const actionButtonBase =
+  "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-bold transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0.5";
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -37,15 +41,13 @@ interface CurrentWorkWidgetProps {
 export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
   const isGlass = theme === "glass";
   const {
-    workSession,
-    isWorkTimerRunning,
-    activeWorkSeconds,
     startWorkSession,
     pauseWorkSession,
     openBreakModal,
     openHourlyUpdateModal,
     activeBreak,
   } = useWorkTrack();
+  const { workSession, isWorkTimerRunning, activeWorkSeconds } = useWorkTrackWorkTimer();
 
   const [countdown, setCountdown] = useState(1338); // 22:18 countdown
 
@@ -212,8 +214,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
             <ProgressBar
               value={updateProgress}
               className="h-full w-full"
-              barClassName="bg-[#059669]"
-              trackClassName={isGlass ? "bg-white/10" : undefined}
+              trackClassName={isGlass ? "bg-white/10 ring-0" : undefined}
             />
           </div>
           <p
@@ -231,7 +232,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
         <button
           type="button"
           onClick={openHourlyUpdateModal}
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-800/80 px-4 py-2.5 text-sm font-bold transition-all duration-150 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] active:translate-y-0.5"
+          className={`${actionButtonBase} bg-emerald-950/90 text-emerald-300 border-emerald-800/80 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700`}
         >
           <Pencil className="h-4 w-4 text-emerald-300" />
           Submit Update
@@ -239,27 +240,27 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
         <button
           type="button"
           onClick={openBreakModal}
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#F59E0B] active:translate-y-0.5"
+          className={`${actionButtonBase} bg-amber-950/90 text-amber-300 border-amber-800/80 shadow-[inset_0_-2px_0_0_#D97706] hover:bg-amber-900 hover:border-amber-700`}
         >
-          <Coffee className="h-4 w-4 text-amber-400" />
+          <Coffee className="h-4 w-4 text-amber-300" />
           Take Break
         </button>
         {isWorkTimerRunning ? (
           <button
             type="button"
             onClick={pauseWorkSession}
-            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-white/15 hover:-translate-y-0.5 shadow-[inset_0_-2px_0_0_#EF4444] active:translate-y-0.5"
+            className={`${actionButtonBase} bg-red-950/90 text-red-300 border-red-800/80 shadow-[inset_0_-2px_0_0_#DC2626] hover:bg-red-900 hover:border-red-700`}
           >
-            <Pause className="h-4 w-4 text-rose-400" />
+            <Pause className="h-4 w-4 text-red-300" />
             Pause Work
           </button>
         ) : (
           <button
             type="button"
             onClick={startWorkSession}
-            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-800/80 px-4 py-2.5 text-sm font-bold transition-all duration-150 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] active:translate-y-0.5"
+            className={`${actionButtonBase} bg-emerald-950/90 text-emerald-300 border-emerald-800/80 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700`}
           >
-            <Play className="h-4 w-4 text-emerald-300 fill-emerald-300" />
+            <Play className="h-4 w-4 fill-emerald-300 text-emerald-300" />
             Resume Work
           </button>
         )}

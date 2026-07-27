@@ -5,6 +5,7 @@ import { TaskModal } from "./TaskModal";
 import { ProjectModal } from "./ProjectModal";
 import { BreakModal } from "./BreakModal";
 import { HourlyUpdateModal } from "./HourlyUpdateModal";
+import { SessionHistoryModal } from "./SessionHistoryModal";
 
 export function GlobalModals() {
   return (
@@ -13,6 +14,7 @@ export function GlobalModals() {
       <ProjectModal />
       <BreakModal />
       <HourlyUpdateModal />
+      <SessionHistoryModal />
     </>
   );
 }

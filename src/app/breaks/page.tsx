@@ -3,7 +3,8 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { GuidelinesCard } from "@/components/shared/GuidelinesCard";
-import { DonutChart } from "@/components/charts/DonutChart";
+import { BreakSummaryCard } from "@/components/breaks/BreakSummaryCard";
+import { ActiveBreakPanel, OngoingBreakRow } from "@/components/breaks/ActiveBreakPanel";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -42,22 +43,16 @@ function formatHMS(seconds: number): string {
 }
 
 export default function BreaksPage() {
-  const { breaks, activeBreak, activeBreakSeconds, endBreak, openBreakModal } = useWorkTrack();
+  const { breaks, activeBreak, endBreak, openBreakModal } = useWorkTrack();
 
   const totalBreakSecs = breaks.reduce((acc, b) => {
     const parts = b.duration.split(":").map(Number);
     if (parts.length === 3) return acc + parts[0] * 3600 + parts[1] * 60 + parts[2];
     return acc;
-  }, 0) + (activeBreak ? activeBreakSeconds : 0);
+  }, 0);
 
   const totalBreakStr = formatHMS(totalBreakSecs);
   const breakCount = breaks.length + (activeBreak ? 1 : 0);
-
-  const summaryData = [
-    { name: "Personal", value: breaks.filter((b) => b.type === "personal").length || 1, color: "#10B981" },
-    { name: "Lunch", value: breaks.filter((b) => b.type === "lunch").length || 0, color: "#F59E0B" },
-    { name: "Prayer", value: breaks.filter((b) => b.type === "prayer").length || 0, color: "#3B82F6" },
-  ];
 
   return (
     <div className="page-stack">
@@ -79,32 +74,7 @@ export default function BreaksPage() {
       <div className="page-grid lg:grid-cols-2">
         <div className="panel-card border border-white/10 bg-[#0F172A]">
           {activeBreak ? (
-            <>
-              <div className="mb-3 flex items-center justify-between">
-                <span className="rounded-full border border-amber-500/30 bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-400 animate-pulse">
-                  BREAK IN PROGRESS
-                </span>
-                <span className="text-xs text-white/50">Started: {activeBreak.startTime}</span>
-              </div>
-              <div className="flex items-center gap-4 py-2">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-                  <Coffee className="h-7 w-7 text-amber-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white capitalize">{activeBreak.type} Break</h3>
-                  <p className="text-3xl font-extrabold text-amber-400 tabular-nums my-1">
-                    {formatHMS(activeBreakSeconds)}
-                  </p>
-                  <p className="text-xs text-white/50">{activeBreak.reason || "Taking a short rest..."}</p>
-                </div>
-              </div>
-              <Button
-                onClick={endBreak}
-                className="mt-4 w-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-900 shadow-[0_0_20px_rgba(16,185,129,0.3)] font-bold py-3 rounded-xl"
-              >
-                End Break Now
-              </Button>
-            </>
+            <ActiveBreakPanel activeBreak={activeBreak} onEndBreak={endBreak} />
           ) : (
             <div className="py-6 text-center space-y-3">
               <Coffee className="h-10 w-10 text-white/30 mx-auto" />
@@ -123,15 +93,7 @@ export default function BreaksPage() {
           )}
         </div>
 
-        <div className="panel-card border border-white/10 bg-[#0F172A]">
-          <h3 className="panel-title text-emerald-400 mb-2">Today&apos;s Break Summary</h3>
-          <DonutChart
-            data={summaryData}
-            centerValue={totalBreakStr}
-            centerLabel="Total Break"
-            height={180}
-          />
-        </div>
+        <BreakSummaryCard breaks={breaks} activeBreak={activeBreak} />
       </div>
 
       <div className="page-grid lg:grid-cols-12">
@@ -155,13 +117,7 @@ export default function BreaksPage() {
               </TableHeader>
               <TableBody>
                 {activeBreak && (
-                  <TableRow className="bg-amber-950/60 border-l-2 border-l-amber-500">
-                    <TableCell className="text-sm text-white">{activeBreak.startTime}</TableCell>
-                    <TableCell className="text-sm text-amber-400 font-bold">(Ongoing)</TableCell>
-                    <TableCell className="text-sm capitalize text-amber-300 font-medium">{activeBreak.type}</TableCell>
-                    <TableCell className="text-sm font-bold text-amber-400">{formatHMS(activeBreakSeconds)}</TableCell>
-                    <TableCell className="text-sm text-white/60">{activeBreak.reason || "-"}</TableCell>
-                  </TableRow>
+                  <OngoingBreakRow activeBreak={activeBreak} />
                 )}
                 {breaks.map((record) => {
                   const Icon = breakTypeIcons[record.type] || Coffee;

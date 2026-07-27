@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { DONUT_CHART_ANIMATION_DURATION } from "@/hooks/useChartAnimationOnce";
+
 interface GaugeChartProps {
   score: number;
   maxScore?: number;
@@ -10,7 +13,16 @@ export function GaugeChart({ score, maxScore = 100, size = 160 }: GaugeChartProp
   const percentage = (score / maxScore) * 100;
   const radius = size / 2 - 12;
   const circumference = Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const targetOffset = circumference - (percentage / 100) * circumference;
+
+  const [strokeDashoffset, setStrokeDashoffset] = useState(circumference);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setStrokeDashoffset(targetOffset);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [targetOffset]);
 
   const getColor = () => {
     if (score >= 80) return "url(#gaugeEmeraldGradient)";
@@ -53,8 +65,10 @@ export function GaugeChart({ score, maxScore = 100, size = 160 }: GaugeChartProp
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-700"
-          style={{ filter: "drop-shadow(0 0 8px rgba(5, 150, 105, 0.5))" }}
+          style={{
+            filter: "drop-shadow(0 0 8px rgba(5, 150, 105, 0.5))",
+            transition: `stroke-dashoffset ${DONUT_CHART_ANIMATION_DURATION}ms ease-in-out`,
+          }}
         />
       </svg>
       <div className="absolute bottom-0 flex flex-col items-center">

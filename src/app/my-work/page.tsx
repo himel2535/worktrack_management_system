@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CurrentWorkWidget } from "@/components/dashboard/CurrentWorkWidget";
-import { GuidelinesCard } from "@/components/shared/GuidelinesCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PointsIndicator } from "@/components/shared/PointsIndicator";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { activeWorkSession, todayNote } from "@/lib/mock-data/work-session";
-import { hourlyUpdates } from "@/lib/mock-data/hourly-updates";
+import { useWorkTrack } from "@/context/WorkTrackContext";
+import { useWorkTrackWorkTimer } from "@/context/WorkTrackTimerContext";
+import { todayNote } from "@/lib/mock-data/work-session";
 import {
   FolderKanban,
   CheckSquare,
@@ -37,24 +37,38 @@ function formatTime(seconds: number): string {
   return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
+const quickActionBase =
+  "h-auto flex-col gap-1 rounded-2xl border py-3 text-white transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0.5 hover:text-white focus-visible:ring-white/20";
+
 const quickActionTones = {
   emerald:
     "border-emerald-800/60 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669]",
   amber:
-    "border-amber-400/35 bg-amber-400/30 hover:bg-amber-600/55 hover:border-amber-400/50",
-  sky: "border-sky-400/35 bg-sky-400/30 hover:bg-blue-600/55 hover:border-sky-400/50",
-  rose: "border-rose-400/35 bg-rose-400/30 hover:bg-red-600/55 hover:border-rose-400/50",
+    "border-amber-800/60 bg-amber-950/80 text-amber-300 hover:bg-amber-900 hover:border-amber-700 shadow-[inset_0_-2px_0_0_#D97706]",
+  sky: "border-sky-800/60 bg-sky-950/80 text-sky-300 hover:bg-sky-900 hover:border-sky-700 shadow-[inset_0_-2px_0_0_#0284C7]",
+  rose: "border-red-800/60 bg-red-950/80 text-red-300 hover:bg-red-900 hover:border-red-700 shadow-[inset_0_-2px_0_0_#DC2626]",
 } as const;
 
 const quickActions = [
-  { label: "Start Work", icon: Play, tone: "emerald" as const },
-  { label: "Take Break", icon: Coffee, tone: "amber" as const },
-  { label: "Submit Update", icon: Send, tone: "sky" as const },
-  { label: "Stop Work", icon: Square, tone: "rose" as const },
+  { id: "start", label: "Start Work", icon: Play, tone: "emerald" as const },
+  { id: "break", label: "Take Break", icon: Coffee, tone: "amber" as const },
+  { id: "update", label: "Submit Update", icon: Send, tone: "sky" as const },
+  { id: "stop", label: "Stop Work", icon: Square, tone: "rose" as const },
 ];
 
 export default function MyWorkPage() {
-  const [countdown, setCountdown] = useState(parseTime(activeWorkSession.nextUpdateDueIn));
+  const {
+    hourlyUpdates,
+    openBreakModal,
+    openHourlyUpdateModal,
+    openSessionHistoryModal,
+    startWorkSession,
+    stopWorkSession,
+    activeBreak,
+  } = useWorkTrack();
+  const { workSession, isWorkTimerRunning } = useWorkTrackWorkTimer();
+
+  const [countdown, setCountdown] = useState(parseTime(workSession.nextUpdateDueIn || "00:22:18"));
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +78,20 @@ export default function MyWorkPage() {
   }, []);
 
   const completed = hourlyUpdates.filter((u) => u.status === "on_time").length;
+
+  const actionHandlers: Record<string, () => void> = {
+    start: startWorkSession,
+    break: openBreakModal,
+    update: openHourlyUpdateModal,
+    stop: stopWorkSession,
+  };
+
+  const actionDisabled: Record<string, boolean> = {
+    start: isWorkTimerRunning || !!activeBreak,
+    break: !!activeBreak,
+    update: false,
+    stop: !isWorkTimerRunning && !activeBreak,
+  };
 
   return (
     <div className="page-stack">
@@ -127,12 +155,12 @@ export default function MyWorkPage() {
             <h3 className="panel-title">Work Session Info</h3>
             <div className="space-y-2">
               {[
-                { icon: FolderKanban, label: "Project", value: activeWorkSession.projectName },
-                { icon: CheckSquare, label: "Task", value: activeWorkSession.taskName },
-                { icon: Play, label: "Session Start", value: activeWorkSession.startedAt },
-                { icon: Timer, label: "Work Session", value: activeWorkSession.totalWorkTime },
-                { icon: Coffee, label: "Break Taken", value: activeWorkSession.breakTaken, color: "text-orange-600" },
-                { icon: FileText, label: "Last Update", value: activeWorkSession.lastUpdateAt },
+                { icon: FolderKanban, label: "Project", value: workSession.projectName },
+                { icon: CheckSquare, label: "Task", value: workSession.taskName },
+                { icon: Play, label: "Session Start", value: workSession.startedAt },
+                { icon: Timer, label: "Work Session", value: workSession.totalWorkTime },
+                { icon: Coffee, label: "Break Taken", value: workSession.breakTaken, color: "text-orange-600" },
+                { icon: FileText, label: "Last Update", value: workSession.lastUpdateAt },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm">
                   <item.icon className="h-4 w-4 text-white/40" />
@@ -148,8 +176,12 @@ export default function MyWorkPage() {
                 <span className="ml-auto font-medium text-orange-600">{formatTime(countdown)}</span>
               </div>
             </div>
-            <ProgressBar value={activeWorkSession.updateProgress} className="mt-2" />
-            <Button variant="glass" className="mt-2 w-full gap-2">
+            <ProgressBar value={workSession.updateProgress} className="mt-2" />
+            <Button
+              variant="glass"
+              className="mt-2 w-full gap-2"
+              onClick={openSessionHistoryModal}
+            >
               <History className="h-4 w-4" />
               Session History
             </Button>
@@ -158,10 +190,13 @@ export default function MyWorkPage() {
           <div className="panel-card">
             <h3 className="panel-title">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-2">
-              {quickActions.map(({ label, icon: Icon, tone }) => (
+              {quickActions.map(({ id, label, icon: Icon, tone }) => (
                 <Button
-                  key={label}
-                  className={`h-auto flex-col gap-1 rounded-2xl border py-3 text-white transition-colors hover:text-white focus-visible:ring-white/20 ${quickActionTones[tone]}`}
+                  key={id}
+                  type="button"
+                  disabled={actionDisabled[id]}
+                  onClick={actionHandlers[id]}
+                  className={`${quickActionBase} ${quickActionTones[tone]}`}
                 >
                   <Icon className="h-5 w-5" />
                   <span className="text-xs">{label}</span>

@@ -5,6 +5,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { CurrentWorkWidget } from "@/components/dashboard/CurrentWorkWidget";
 import dynamic from "next/dynamic";
 import { useWorkTrack } from "@/context/WorkTrackContext";
+import { useWorkTrackWorkTimer, useWorkTrackBreakTimer } from "@/context/WorkTrackTimerContext";
 import { Timer, Coffee, ClipboardCheck, Star, CalendarCheck } from "lucide-react";
 
 const TodaySummary = dynamic(() => import("@/components/dashboard/TodaySummary").then((mod) => mod.TodaySummary));
@@ -13,15 +14,15 @@ const MyTasksWidget = dynamic(() => import("@/components/dashboard/MyTasksWidget
 
 export default function DashboardPage() {
   const {
-    workSession,
     breaks,
     activeBreak,
-    activeBreakSeconds,
     hourlyUpdates,
     todayPoints,
     isClockedIn,
     clockInTime,
   } = useWorkTrack();
+  const { workSession } = useWorkTrackWorkTimer();
+  const { activeBreakSeconds } = useWorkTrackBreakTimer();
 
   // Calculate total break duration string
   const totalBreakSeconds = breaks.reduce((acc, b) => {

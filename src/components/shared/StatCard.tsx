@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProgressBar } from "@/components/shared/ProgressBar";
 
 interface StatCardProps {
   label: string;
@@ -68,14 +69,7 @@ export function StatCard({
               {value}
             </p>
             {progress !== undefined && (
-              <div className="my-1 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-400 transition-all shadow-[0_0_8px_rgba(5,150,105,0.4)]"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, progress))}%`,
-                  }}
-                />
-              </div>
+              <ProgressBar value={progress} className="my-1 w-full" />
             )}
             {subLabel && (
               <p className="text-[11px] font-normal text-white/50 truncate">{subLabel}</p>
@@ -114,14 +108,12 @@ export function StatCard({
               {value}
             </p>
             {progress !== undefined && (
-              <div className="my-1 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all"
-                  style={{
-                    width: `${Math.min(100, Math.max(0, progress))}%`,
-                  }}
-                />
-              </div>
+              <ProgressBar
+                value={progress}
+                className="my-1 w-full"
+                trackClassName="bg-slate-100 ring-0"
+                barClassName="from-emerald-700 via-emerald-600 to-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.35)]"
+              />
             )}
             {subLabel && (
               <p className="text-xs font-normal text-slate-400 truncate">

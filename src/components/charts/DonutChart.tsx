@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback, useEffect, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -8,7 +9,8 @@ import {
   Tooltip,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { Rocket, Sparkles } from "lucide-react";
+import { Rocket } from "lucide-react";
+import { useChartAnimationOnce, DONUT_CHART_ANIMATION_DURATION } from "@/hooks/useChartAnimationOnce";
 
 interface DonutChartProps {
   data: { name: string; value: number; color: string }[];
@@ -68,7 +70,7 @@ function getOrbStyle(color: string, index: number): string {
     : "bg-gradient-to-br from-amber-950 via-amber-600 to-amber-400 shadow-[inset_-1.5px_-1.5px_3px_rgba(0,0,0,0.9),inset_1.5px_1.5px_3px_rgba(255,255,255,0.7),0_0_12px_rgba(217,119,6,0.8)]";
 }
 
-export function DonutChart({
+function DonutChartInner({
   data,
   centerLabel,
   centerValue,
@@ -78,9 +80,29 @@ export function DonutChart({
   theme = "dark",
 }: DonutChartProps) {
   const isDark = theme === "dark";
+  const { isAnimationActive, onAnimationEnd, animationDuration } =
+    useChartAnimationOnce(DONUT_CHART_ANIMATION_DURATION);
+
+  // Freeze data during entry animation so live timer ticks don't interrupt the arc
+  const [chartData, setChartData] = useState(data);
+  const [displayCenter, setDisplayCenter] = useState(centerValue);
+
+  const handleAnimationEnd = useCallback(() => {
+    onAnimationEnd();
+    setChartData(data);
+    setDisplayCenter(centerValue);
+  }, [onAnimationEnd, data, centerValue]);
+
+  useEffect(() => {
+    if (!isAnimationActive) {
+      setChartData(data);
+      setDisplayCenter(centerValue);
+    }
+  }, [data, centerValue, isAnimationActive]);
+
   const chartHeight = variant === "productivity" ? 180 : Math.min(height, 180);
   const valueFontSize =
-    centerValue !== undefined ? getCenterValueFontSize(centerValue) : "text-2xl";
+    displayCenter !== undefined ? getCenterValueFontSize(displayCenter) : "text-2xl";
 
   return (
     <div className="mx-auto flex w-full min-w-[210px] max-w-[250px] flex-col items-center">
@@ -135,7 +157,7 @@ export function DonutChart({
         <ResponsiveContainer width="100%" height="100%">
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Pie
-              data={data}
+              data={chartData}
               dataKey="value"
               cx="50%"
               cy="50%"
@@ -144,8 +166,13 @@ export function DonutChart({
               paddingAngle={5}
               stroke="rgba(0, 0, 0, 0.4)"
               strokeWidth={3}
+              isAnimationActive={isAnimationActive}
+              animationDuration={animationDuration}
+              animationBegin={0}
+              animationEasing="ease-in-out"
+              onAnimationEnd={handleAnimationEnd}
             >
-              {data.map((entry, index) => (
+              {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={getCellColorGradient(entry.color, index)}
@@ -170,9 +197,9 @@ export function DonutChart({
         </ResponsiveContainer>
 
         {/* Center Display with Icon & Value */}
-        {centerValue !== undefined && (
+        {displayCenter !== undefined && (
           <div className="pointer-events-none absolute left-1/2 top-[calc(50%-8px)] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center text-center">
-            <Rocket className="mb-0.5 h-3.5 w-3.5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+            <Rocket className="mb-0.5 h-3.5 w-3.5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
             <span
               className={cn(
                 "font-extrabold tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]",
@@ -180,7 +207,7 @@ export function DonutChart({
                 isDark ? "text-white" : "text-slate-900"
               )}
             >
-              {centerValue}
+              {displayCenter}
             </span>
           </div>
         )}
@@ -198,7 +225,7 @@ export function DonutChart({
       {/* Futuristic 3D Glassmorphism Legend HUD Card */}
       {showLegend && (
         <div className="mt-3.5 flex w-full flex-col gap-2 rounded-xl border border-white/15 bg-slate-950/90 p-3 shadow-[0_8px_24px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)]">
-          {data.map((entry, index) => (
+          {chartData.map((entry, index) => (
             <div key={entry.name} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {/* 3D Glowing Sphere/Orb */}
@@ -227,3 +254,5 @@ export function DonutChart({
     </div>
   );
 }
+
+export const DonutChart = memo(DonutChartInner);

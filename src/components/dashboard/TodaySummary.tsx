@@ -1,8 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { PerformanceGraph } from "@/components/dashboard/PerformanceGraph";
 import { useWorkTrack } from "@/context/WorkTrackContext";
+import { useWorkTrackWorkTimer, useWorkTrackBreakTimer } from "@/context/WorkTrackTimerContext";
 import { cn } from "@/lib/utils";
 
 function formatHMS(seconds: number): string {
@@ -12,13 +14,42 @@ function formatHMS(seconds: number): string {
   return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
+interface ProductivityDonutProps {
+  workPercent: number;
+  isGlass: boolean;
+}
+
+const ProductivityDonut = memo(function ProductivityDonut({
+  workPercent,
+  isGlass,
+}: ProductivityDonutProps) {
+  const productivityChartData = [
+    { name: "Active Work Time", value: Math.max(1, workPercent), color: "#10B981" },
+    { name: "Break Time", value: Math.max(0, 100 - workPercent), color: "#F59E0B" },
+  ];
+
+  return (
+    <DonutChart
+      variant="productivity"
+      theme={isGlass ? "dark" : "light"}
+      data={productivityChartData}
+      centerValue={`${workPercent}%`}
+      centerLabel="Productive Time"
+      showLegend
+      height={210}
+    />
+  );
+});
+
 interface TodaySummaryProps {
   theme?: "light" | "glass";
 }
 
 export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
   const isGlass = theme === "glass";
-  const { activeWorkSeconds, activeBreakSeconds, breaks, tasks, projects } = useWorkTrack();
+  const { breaks, tasks, projects } = useWorkTrack();
+  const { activeWorkSeconds } = useWorkTrackWorkTimer();
+  const { activeBreakSeconds } = useWorkTrackBreakTimer();
 
   const totalBreakSecs = breaks.reduce((acc, b) => {
     const parts = b.duration.split(":").map(Number);
@@ -37,11 +68,6 @@ export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
     { label: "Break Count", value: breaks.length },
     { label: "Projects Worked", value: projects.length },
     { label: "Tasks Completed", value: tasks.filter((t) => t.status === "completed").length },
-  ];
-
-  const productivityChartData = [
-    { name: "Active Work Time", value: Math.max(1, activeWorkSeconds), color: "#10B981" },
-    { name: "Break Time", value: Math.max(0, totalBreakSecs), color: "#F59E0B" },
   ];
 
   return (
@@ -76,15 +102,7 @@ export function TodaySummary({ theme = "glass" }: TodaySummaryProps) {
           ))}
         </div>
         <div className="flex w-full min-w-[200px] items-center justify-center">
-          <DonutChart
-            variant="productivity"
-            theme={isGlass ? "dark" : "light"}
-            data={productivityChartData}
-            centerValue={`${workPercent}%`}
-            centerLabel="Productive Time"
-            showLegend
-            height={210}
-          />
+          <ProductivityDonut workPercent={workPercent} isGlass={isGlass} />
         </div>
       </div>
       {isGlass && <PerformanceGraph />}

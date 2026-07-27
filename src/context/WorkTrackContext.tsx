@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import {
+  WorkTrackWorkTimerProvider,
+  WorkTrackBreakTimerProvider,
+  WorkTrackWorkTimerContextType,
+  WorkTrackBreakTimerContextType,
+} from "@/context/WorkTrackTimerContext";
 import {
   Task,
   Project,
@@ -41,10 +47,7 @@ export interface WorkTrackContextType {
   todayNote: string;
   setTodayNote: (note: string) => void;
 
-  // Work Session & Timer
-  workSession: WorkSession;
-  isWorkTimerRunning: boolean;
-  activeWorkSeconds: number;
+  // Work Session Actions
   startWorkSession: () => void;
   pauseWorkSession: () => void;
   stopWorkSession: () => void;
@@ -59,7 +62,6 @@ export interface WorkTrackContextType {
   // Breaks
   breaks: BreakRecord[];
   activeBreak: ActiveBreakState | null;
-  activeBreakSeconds: number;
   startBreak: (type: BreakType, reason?: string) => void;
   endBreak: () => void;
 
@@ -100,6 +102,10 @@ export interface WorkTrackContextType {
   isHourlyUpdateModalOpen: boolean;
   openHourlyUpdateModal: () => void;
   closeHourlyUpdateModal: () => void;
+
+  isSessionHistoryModalOpen: boolean;
+  openSessionHistoryModal: () => void;
+  closeSessionHistoryModal: () => void;
 }
 
 const STORAGE_KEY = "worktrack_app_state_v2";
@@ -145,6 +151,7 @@ export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
   const [isBreakModalOpen, setIsBreakModalOpen] = useState<boolean>(false);
   const [isHourlyUpdateModalOpen, setIsHourlyUpdateModalOpen] = useState<boolean>(false);
+  const [isSessionHistoryModalOpen, setIsSessionHistoryModalOpen] = useState<boolean>(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -518,57 +525,98 @@ export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const openHourlyUpdateModal = () => setIsHourlyUpdateModalOpen(true);
   const closeHourlyUpdateModal = () => setIsHourlyUpdateModalOpen(false);
 
+  const openSessionHistoryModal = () => setIsSessionHistoryModalOpen(true);
+  const closeSessionHistoryModal = () => setIsSessionHistoryModalOpen(false);
+
+  const workTimerContextValue = useMemo<WorkTrackWorkTimerContextType>(
+    () => ({
+      workSession,
+      isWorkTimerRunning,
+      activeWorkSeconds,
+    }),
+    [workSession, isWorkTimerRunning, activeWorkSeconds]
+  );
+
+  const breakTimerContextValue = useMemo<WorkTrackBreakTimerContextType>(
+    () => ({ activeBreakSeconds }),
+    [activeBreakSeconds]
+  );
+
+  const mainContextValue = useMemo<WorkTrackContextType>(
+    () => ({
+      user,
+      updateUser,
+      todayNote,
+      setTodayNote,
+      startWorkSession,
+      pauseWorkSession,
+      stopWorkSession,
+      isClockedIn,
+      clockInTime,
+      attendanceRecords,
+      clockIn,
+      clockOut,
+      breaks,
+      activeBreak,
+      startBreak,
+      endBreak,
+      tasks,
+      addTask,
+      editTask,
+      deleteTask,
+      updateTaskStatus,
+      projects,
+      addProject,
+      editProject,
+      deleteProject,
+      hourlyUpdates,
+      submitHourlyUpdate,
+      todayPoints,
+      timeline,
+      taskModalState,
+      openTaskModal,
+      closeTaskModal,
+      projectModalState,
+      openProjectModal,
+      closeProjectModal,
+      isBreakModalOpen,
+      openBreakModal,
+      closeBreakModal,
+      isHourlyUpdateModalOpen,
+      openHourlyUpdateModal,
+      closeHourlyUpdateModal,
+      isSessionHistoryModalOpen,
+      openSessionHistoryModal,
+      closeSessionHistoryModal,
+    }),
+    [
+      user,
+      todayNote,
+      isClockedIn,
+      clockInTime,
+      attendanceRecords,
+      breaks,
+      activeBreak,
+      tasks,
+      projects,
+      hourlyUpdates,
+      todayPoints,
+      timeline,
+      taskModalState,
+      projectModalState,
+      isBreakModalOpen,
+      isHourlyUpdateModalOpen,
+      isSessionHistoryModalOpen,
+    ]
+  );
+
   return (
-    <WorkTrackContext.Provider
-      value={{
-        user,
-        updateUser,
-        todayNote,
-        setTodayNote,
-        workSession,
-        isWorkTimerRunning,
-        activeWorkSeconds,
-        startWorkSession,
-        pauseWorkSession,
-        stopWorkSession,
-        isClockedIn,
-        clockInTime,
-        attendanceRecords,
-        clockIn,
-        clockOut,
-        breaks,
-        activeBreak,
-        activeBreakSeconds,
-        startBreak,
-        endBreak,
-        tasks,
-        addTask,
-        editTask,
-        deleteTask,
-        updateTaskStatus,
-        projects,
-        addProject,
-        editProject,
-        deleteProject,
-        hourlyUpdates,
-        submitHourlyUpdate,
-        todayPoints,
-        timeline,
-        taskModalState,
-        openTaskModal,
-        closeTaskModal,
-        projectModalState,
-        openProjectModal,
-        closeProjectModal,
-        isBreakModalOpen,
-        openBreakModal,
-        closeBreakModal,
-        isHourlyUpdateModalOpen,
-        openHourlyUpdateModal,
-        closeHourlyUpdateModal,
-      }}
-    >
-      {children}
+    <WorkTrackContext.Provider value={mainContextValue}>
+      <WorkTrackWorkTimerProvider value={workTimerContextValue}>
+        <WorkTrackBreakTimerProvider value={breakTimerContextValue}>
+          {children}
+        </WorkTrackBreakTimerProvider>
+      </WorkTrackWorkTimerProvider>
     </WorkTrackContext.Provider>
   );
 };

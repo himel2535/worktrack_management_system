@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import {
   LineChart as RechartsLineChart,
   Line,
@@ -10,6 +11,10 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import {
+  useChartAnimationOnce,
+  DONUT_CHART_ANIMATION_DURATION,
+} from "@/hooks/useChartAnimationOnce";
 
 interface LineChartProps {
   data: Record<string, string | number>[];
@@ -25,12 +30,28 @@ export function LineChart({
   theme = "dark",
 }: LineChartProps) {
   const isDark = theme === "dark";
+  const { isAnimationActive, onAnimationEnd, animationDuration } = useChartAnimationOnce(
+    DONUT_CHART_ANIMATION_DURATION
+  );
+  const [chartData, setChartData] = useState(data);
+
+  const handleAnimationEnd = useCallback(() => {
+    onAnimationEnd();
+    setChartData(data);
+  }, [onAnimationEnd, data]);
+
+  useEffect(() => {
+    if (!isAnimationActive) {
+      setChartData(data);
+    }
+  }, [data, isAnimationActive]);
+
   const gridStroke = isDark ? "rgba(255,255,255,0.08)" : "#E2E8F0";
   const tickFill = isDark ? "rgba(255,255,255,0.45)" : "#64748B";
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsLineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+      <RechartsLineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
         <XAxis dataKey="day" tick={{ fontSize: 12, fill: tickFill }} />
         <YAxis tick={{ fontSize: 12, fill: tickFill }} />
@@ -56,7 +77,7 @@ export function LineChart({
             </span>
           )}
         />
-        {lines.map((line) => (
+        {lines.map((line, index) => (
           <Line
             key={line.key}
             type="monotone"
@@ -65,6 +86,11 @@ export function LineChart({
             strokeWidth={2}
             dot={{ r: 3 }}
             name={line.name || line.key}
+            isAnimationActive={isAnimationActive}
+            animationDuration={animationDuration}
+            animationBegin={0}
+            animationEasing="ease-in-out"
+            onAnimationEnd={index === 0 ? handleAnimationEnd : undefined}
           />
         ))}
       </RechartsLineChart>
