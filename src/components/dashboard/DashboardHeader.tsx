@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import { Bell, Calendar } from "lucide-react";
 import { getCurrentTime, getGreeting, formatDate } from "@/lib/format";
 import { useWorkTrack } from "@/context/WorkTrackContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   theme?: "light" | "glass";
+  title?: string;
+  subtitle?: string;
 }
 
-export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
+export function DashboardHeader({ theme = "light", title, subtitle }: DashboardHeaderProps) {
   const { user } = useWorkTrack();
   const [time, setTime] = useState("10:45 AM");
   const isGlass = theme === "glass";
@@ -31,7 +33,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
             isGlass ? "text-white" : "text-slate-800"
           )}
         >
-          {getGreeting()}, {user.name} 👋
+          {title ?? `${getGreeting()}, ${user.name} 👋`}
         </h1>
         <p
           className={cn(
@@ -39,7 +41,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
             isGlass ? "text-white/60" : "text-slate-500"
           )}
         >
-          Let&apos;s make today productive!
+          {subtitle ?? "Let\u2019s make today productive!"}
         </p>
       </div>
 
@@ -94,35 +96,7 @@ export function DashboardHeader({ theme = "light" }: DashboardHeaderProps) {
           </span>
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <Avatar
-            className={cn(
-              "h-9 w-9 border-2 shadow-sm",
-              isGlass ? "border-white/20" : "border-white"
-            )}
-          >
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="hidden sm:block">
-            <p
-              className={cn(
-                "text-sm font-medium",
-                isGlass ? "text-white" : "text-slate-800"
-              )}
-            >
-              {user.name}
-            </p>
-            <p
-              className={cn(
-                "text-xs",
-                isGlass ? "text-white/50" : "text-slate-500"
-              )}
-            >
-              {user.role}
-            </p>
-          </div>
-        </div>
+        <UserMenu theme={isGlass ? "glass" : "light"} />
       </div>
     </div>
   );

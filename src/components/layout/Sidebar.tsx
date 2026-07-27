@@ -3,48 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard, Briefcase, FolderKanban, CheckSquare, Clock, Coffee,
-  CalendarCheck, TrendingUp, Settings, Timer, Star, ChevronRight, Menu, X,
-  Users, Shield, AlertTriangle, CalendarDays, Bell, FileText, Trophy, Palmtree, LogOut,
-} from "lucide-react";
+import { Timer, Star, ChevronRight, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkTrack } from "@/context/WorkTrackContext";
 import { apiFetch } from "@/lib/api/client";
-
-const employeeNav = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/my-work", label: "My Work", icon: Briefcase },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/hourly-updates", label: "Hourly Updates", icon: Clock },
-  { href: "/breaks", label: "Breaks", icon: Coffee },
-  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-  { href: "/performance", label: "My Performance", icon: TrendingUp },
-  { href: "/leave", label: "Leave", icon: Palmtree },
-  { href: "/team", label: "Team", icon: Users },
-  { href: "/holidays", label: "Holidays", icon: CalendarDays },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const adminNav = [
-  { href: "/admin", label: "Admin Dashboard", icon: Shield },
-  { href: "/admin/users", label: "User Management", icon: Users },
-  { href: "/admin/alerts", label: "Missed Updates", icon: AlertTriangle },
-  { href: "/admin/leaves", label: "Leave Approvals", icon: Palmtree },
-  { href: "/admin/settings", label: "Company Settings", icon: Settings },
-];
-
-const managerNav = [
-  { href: "/manager", label: "Team Dashboard", icon: LayoutDashboard },
-  { href: "/manager/alerts", label: "Team Alerts", icon: AlertTriangle },
-  { href: "/manager/leaves", label: "Team Leaves", icon: Palmtree },
-];
+import { getSectionsForRole, isSectionActive } from "./sidebarNav";
+import { SidebarSection } from "./SidebarSection";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -56,47 +22,58 @@ export function Sidebar() {
 
   useEffect(() => {
     apiFetch<{ weekPoints: number; monthPoints: number }>("/performance/points/summary")
-      .then((d) => { setWeekPoints(d.weekPoints); setMonthPoints(d.monthPoints); })
+      .then((d) => {
+        setWeekPoints(d.weekPoints);
+        setMonthPoints(d.monthPoints);
+      })
       .catch(() => {});
   }, [todayPoints]);
 
-  const navItems = [
-    ...(user?.role === "admin" ? adminNav : []),
-    ...(user?.role === "manager" || user?.role === "admin" ? managerNav : []),
-    ...employeeNav,
-  ];
+  const sections = getSectionsForRole(user?.role);
+
+  const activeSectionId =
+    sections.find((s) => isSectionActive(pathname, s))?.id ?? null;
+
+  const [openSectionId, setOpenSectionId] = useState<string | null>(activeSectionId);
+
+  useEffect(() => {
+    if (activeSectionId) setOpenSectionId(activeSectionId);
+  }, [activeSectionId]);
 
   const sidebarContent = (
     <>
-      <div className="border-b border-white/10 px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20">
-            <Timer className="h-5 w-5 text-white" />
+      <div className="relative border-b border-white/10 px-4 py-4">
+        <div className="glass-card-inner px-3 py-3 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-400/30">
+              <Timer className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold leading-tight text-white">WorkTrack</h1>
+              <p className="text-xs text-white/50">Work Smart, Every Hour.</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold leading-tight text-white">WorkTrack</h1>
-            <p className="text-xs text-white/50">Work Smart, Every Hour.</p>
-          </div>
+          {user && (
+            <p className="mt-2 text-xs capitalize text-emerald-400/80">
+              {user.role} · {user.name}
+            </p>
+          )}
         </div>
-        {user && (
-          <p className="mt-2 text-xs text-emerald-400/80 capitalize">{user.role} · {user.name}</p>
-        )}
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
-              className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive ? "bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm"
-                  : "text-white/60 hover:bg-white/10 hover:text-white")}>
-              <Icon className="h-5 w-5 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
+        {sections.map((section) => (
+          <SidebarSection
+            key={section.id}
+            section={section}
+            pathname={pathname}
+            isOpen={openSectionId === section.id}
+            onToggle={() =>
+              setOpenSectionId((prev) => (prev === section.id ? null : section.id))
+            }
+            onNavigate={() => setMobileOpen(false)}
+          />
+        ))}
       </nav>
 
       <div className="space-y-3 px-4 pb-4">
@@ -112,12 +89,18 @@ export function Sidebar() {
               <span>Week: +{weekPoints}</span>
               <span>Month: +{monthPoints}</span>
             </div>
-            <Link href="/performance" className="mt-2 flex items-center gap-1 text-xs text-emerald-400 hover:underline">
+            <Link
+              href="/performance"
+              className="mt-2 flex items-center gap-1 text-xs text-emerald-400 hover:underline"
+            >
               View Details <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
-        <button onClick={() => logout()} className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white/70 hover:bg-white/15">
+        <button
+          onClick={() => logout()}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white/70 backdrop-blur-sm transition-colors hover:bg-white/15"
+        >
           <LogOut className="h-4 w-4" /> Sign Out
         </button>
       </div>
@@ -126,15 +109,25 @@ export function Sidebar() {
 
   return (
     <>
-      <Button variant="outline" size="icon"
+      <Button
+        variant="outline"
+        size="icon"
         className="fixed left-4 top-4 z-50 border-white/20 bg-white/10 text-white backdrop-blur-sm lg:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}>
+        onClick={() => setMobileOpen(!mobileOpen)}
+      >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
-      {mobileOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileOpen(false)} />}
-      <aside className={cn("fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/10 bg-[#0D1527] shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-transform duration-300",
-        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
-        {sidebarContent}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+      <aside
+        className={cn(
+          "glass-sidebar-dark fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col transition-transform duration-300",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-emerald-500/[0.04] via-transparent to-cyan-500/[0.03]" />
+        <div className="relative flex h-full flex-col">{sidebarContent}</div>
       </aside>
     </>
   );
