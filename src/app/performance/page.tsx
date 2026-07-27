@@ -1,38 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProgressBar } from "@/components/shared/ProgressBar";
-import { PointsIndicator } from "@/components/shared/PointsIndicator";
 import { GaugeChart } from "@/components/charts/GaugeChart";
 import { DonutChart } from "@/components/charts/DonutChart";
-import { LineChart } from "@/components/charts/LineChart";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  performanceStats,
-  performanceCategories,
-  scoreBreakdownData,
-  performanceTrendData,
-  pointHistory,
-  weeklyOverview,
-} from "@/lib/mock-data/performance";
-import { weekPoints, monthPoints, allTimePoints } from "@/lib/mock-data/user";
-import {
-  Shield,
-  Briefcase,
-  Zap,
-  Star,
-  TrendingUp,
-  Timer,
-  Coffee,
-  CheckSquare,
-  ClipboardList,
-  ChevronRight,
-} from "lucide-react";
+import { apiFetch, apiDownload } from "@/lib/api/client";
+import { Shield, Briefcase, Zap, Star, Timer, Coffee, CheckSquare, Download } from "lucide-react";
 
 const categoryIcons: Record<string, React.ElementType> = {
   Discipline: Shield,
@@ -41,34 +16,55 @@ const categoryIcons: Record<string, React.ElementType> = {
   "Timely Updates": Star,
 };
 
+interface PerfData {
+  overall: number;
+  categories: { id: string; name: string; score: number; weight: number; color: string; description?: string; status?: string }[];
+  points: { todayPoints: number; weekPoints: number; monthPoints: number; allTimePoints: number };
+}
+
+interface PointHistoryItem {
+  _id: string; time: string; description: string; points: number; date: string;
+}
+
 export default function PerformancePage() {
+  const [perf, setPerf] = useState<PerfData | null>(null);
+  const [history, setHistory] = useState<PointHistoryItem[]>([]);
+
+  useEffect(() => {
+    apiFetch<PerfData>("/performance/me").then(setPerf).catch(console.error);
+    apiFetch<PointHistoryItem[]>("/performance/points/history").then(setHistory).catch(console.error);
+  }, []);
+
+  const categories = perf?.categories.map((c) => ({
+    ...c,
+    status: c.score >= 80 ? "Excellent" : c.score >= 60 ? "Good" : "Needs Improvement",
+    description: c.id === "discipline" ? "Attendance, punctuality, and break compliance"
+      : c.id === "work" ? "Task completion and quality of work"
+      : c.id === "productivity" ? "Active work time vs office time ratio"
+      : "Hourly update submission rate",
+  })) || [];
+
+  const scoreBreakdown = categories.map((c) => ({ name: c.name, value: c.weight, color: c.color }));
+  const points = perf?.points;
+
   return (
     <div className="page-stack">
-      <PageHeader
-        title="My Performance"
-        subtitle="Track your performance and improve every day."
-        showClock={false}
-        dateLabel="20 July – 26 July 2026"
-      />
+      <PageHeader title="My Performance" subtitle="Track your performance and improve every day." showClock={false} />
 
-      <div className="page-grid lg:grid-cols-12">
-        <div className="panel-card lg:col-span-3">
-          <h3 className="mb-1.5 text-sm font-medium text-white/50">Overall Performance Score</h3>
-          <div className="flex flex-col items-center">
-            <GaugeChart score={performanceStats.overallScore} />
-            <p className="mt-1.5 text-lg font-semibold text-white">{performanceStats.overallStatus}</p>
-            <p className="text-xs text-white/50">Keep up the great work!</p>
-            <div className="mt-1.5 flex items-center gap-1 text-sm font-semibold text-emerald-400">
-              <TrendingUp className="h-4 w-4" />
-              {performanceStats.trend}
-            </div>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <div className="panel-card lg:col-span-4 flex flex-col items-center justify-center py-6">
+          <GaugeChart score={perf?.overall ?? 0} />
+          <div className="mt-4 grid grid-cols-3 gap-4 text-center text-sm">
+            <div><p className="font-bold text-emerald-400">+{points?.todayPoints ?? 0}</p><p className="text-white/50">Today</p></div>
+            <div><p className="font-bold text-emerald-400">+{points?.weekPoints ?? 0}</p><p className="text-white/50">Week</p></div>
+            <div><p className="font-bold text-emerald-400">+{points?.monthPoints ?? 0}</p><p className="text-white/50">Month</p></div>
           </div>
         </div>
 
-        {performanceCategories.slice(0, 3).map((cat) => {
-          const Icon = categoryIcons[cat.name] || Shield;
+        {categories.slice(0, 4).map((cat) => {
+          const Icon = categoryIcons[cat.name] || Star;
           return (
-            <div key={cat.id} className="panel-card lg:col-span-3">
+            <div key={cat.id} className="panel-card lg:col-span-2">
               <div className="mb-2 flex items-center gap-2">
                 <div className="rounded-full p-2" style={{ backgroundColor: `${cat.color}20` }}>
                   <Icon className="h-4 w-4" style={{ color: cat.color }} />
@@ -79,7 +75,7 @@ export default function PerformancePage() {
                 </div>
               </div>
               <p className="mb-1.5 text-xs font-medium" style={{ color: cat.color }}>{cat.status}</p>
-              <ProgressBar value={cat.score} barClassName="" trackClassName="bg-white/10" />
+              <ProgressBar value={cat.score} trackClassName="bg-white/10" />
               <p className="mt-1.5 text-xs text-white/50">{cat.description}</p>
             </div>
           );
@@ -89,129 +85,37 @@ export default function PerformancePage() {
       <div className="panel-card">
         <h3 className="panel-title">Total Points</h3>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{weekPoints}</p>
-            <p className="text-sm text-white/50">This Week</p>
-          </div>
-          <div>
-            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{monthPoints}</p>
-            <p className="text-sm text-white/50">This Month</p>
-          </div>
-          <div>
-            <p className="text-2xl font-black bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(5,150,105,0.3)]">+{allTimePoints}</p>
-            <p className="text-sm text-white/50">All Time</p>
-          </div>
+          <div><p className="text-2xl font-black text-emerald-400">+{points?.weekPoints ?? 0}</p><p className="text-sm text-white/50">This Week</p></div>
+          <div><p className="text-2xl font-black text-emerald-400">+{points?.monthPoints ?? 0}</p><p className="text-sm text-white/50">This Month</p></div>
+          <div><p className="text-2xl font-black text-emerald-400">+{points?.allTimePoints ?? 0}</p><p className="text-sm text-white/50">All Time</p></div>
         </div>
       </div>
 
       <div className="page-grid lg:grid-cols-2">
         <div className="panel-card">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="panel-title mb-0">Performance Trend</h3>
-            <Select defaultValue="week">
-              <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <LineChart
-            data={performanceTrendData}
-            lines={[
-              { key: "overall", color: "#10B981", name: "Overall Score" },
-              { key: "discipline", color: "#3B82F6", name: "Discipline" },
-              { key: "workPerformance", color: "#A855F7", name: "Work Performance" },
-            ]}
-            height={200}
-          />
-        </div>
-
-        <div className="panel-card">
           <h3 className="panel-title">Score Breakdown</h3>
-          <DonutChart
-            data={scoreBreakdownData.map((d) => ({ name: d.name, value: d.value, color: d.color }))}
-            centerValue={performanceStats.overallScore}
-            centerLabel="Overall"
-            showLegend={false}
-            height={200}
-          />
-          <div className="mt-1.5 space-y-1.5">
-            {scoreBreakdownData.map((item) => (
-              <div key={item.name} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-white/60">{item.name} ({item.value}%)</span>
-                </div>
-                <span className="font-medium text-white">{item.score}/100</span>
-              </div>
-            ))}
-          </div>
+          <DonutChart data={scoreBreakdown} centerLabel="Overall" centerValue={perf?.overall ?? 0} />
         </div>
-      </div>
-
-      <div className="page-grid lg:grid-cols-3">
         <div className="panel-card">
-          <h3 className="panel-title">Performance by Category</h3>
-          <div className="space-y-2">
-            {performanceCategories.map((cat) => {
-              const Icon = categoryIcons[cat.name] || Shield;
-              return (
-                <div key={cat.id}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" style={{ color: cat.color }} />
-                      <span className="text-sm font-medium text-white">{cat.name}</span>
-                    </div>
-                    <span className="text-sm font-bold text-white">{cat.score}/100</span>
-                  </div>
-                  <ProgressBar value={cat.score} />
-                  <p className="mt-0.5 text-xs text-white/50">{cat.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="panel-card">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="panel-title mb-0">Points History</h3>
-            <Button variant="glass" size="xs">View All</Button>
+            <Button variant="glass" size="sm" onClick={() => apiDownload("/reports/performance?format=xlsx", "performance.xlsx")}>
+              <Download className="h-4 w-4 mr-1" /> Export
+            </Button>
           </div>
-          <div className="space-y-2">
-            {pointHistory.map((item) => (
-              <div key={item.id} className="flex items-center justify-between border-b border-white/10 pb-2 last:border-0">
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {history.map((h) => (
+              <div key={h._id} className="flex items-center justify-between py-2 border-b border-white/5">
                 <div>
-                  <p className="text-sm text-white">{item.description}</p>
-                  <p className="text-xs text-white/40">{item.time}</p>
+                  <p className="text-sm text-white">{h.description}</p>
+                  <p className="text-xs text-white/50">{h.date} · {h.time}</p>
                 </div>
-                <PointsIndicator points={item.points} />
+                <span className={`font-bold ${h.points >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  {h.points >= 0 ? "+" : ""}{h.points}
+                </span>
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="panel-card">
-          <h3 className="panel-title">Weekly Overview</h3>
-          <div className="space-y-2">
-            {[
-              { icon: Timer, label: "Total Work Time", value: weeklyOverview.totalWorkTime },
-              { icon: Zap, label: "Active Work Time", value: weeklyOverview.activeWorkTime },
-              { icon: Coffee, label: "Break Time", value: weeklyOverview.breakTime },
-              { icon: CheckSquare, label: "Tasks Completed", value: weeklyOverview.tasksCompleted },
-              { icon: ClipboardList, label: "Hourly Updates", value: `${weeklyOverview.hourlyUpdates.completed} / ${weeklyOverview.hourlyUpdates.total}` },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-2 text-sm">
-                <item.icon className="h-4 w-4 text-white/40" />
-                <span className="text-white/50">{item.label}</span>
-                <span className="ml-auto font-semibold text-white">{item.value}</span>
-              </div>
-            ))}
-          </div>
-          <Button variant="glass" className="mt-2 w-full gap-2">
-            View Detailed Report
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>

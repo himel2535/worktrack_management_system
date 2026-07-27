@@ -9,11 +9,17 @@ export function BreakModal() {
   const { isBreakModalOpen, closeBreakModal, startBreak } = useWorkTrack();
   const [selectedType, setSelectedType] = useState<BreakType>("personal");
   const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
 
   if (!isBreakModalOpen) return null;
 
   const handleStart = () => {
-    startBreak(selectedType, reason);
+    if (selectedType === "other" && !reason.trim()) {
+      setError("Please enter a reason for other break type");
+      return;
+    }
+    setError("");
+    startBreak(selectedType, reason.trim() || undefined);
     setReason("");
     closeBreakModal();
   };
@@ -64,14 +70,20 @@ export function BreakModal() {
           </div>
 
           <div className="mt-3">
-            <label className="block text-xs font-semibold text-white/70 mb-1">Reason / Note (Optional)</label>
+            <label className="block text-xs font-semibold text-white/70 mb-1">
+              Reason / Note {selectedType === "other" ? "(Required)" : "(Optional)"}
+            </label>
             <input
               type="text"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Grabbing coffee..."
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (error) setError("");
+              }}
+              placeholder={selectedType === "other" ? "Describe your break reason..." : "e.g. Grabbing coffee..."}
               className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-sm text-white placeholder-white/40 focus:border-amber-500 focus:outline-none"
             />
+            {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
           </div>
 
           <div className="pt-3 flex items-center justify-end gap-2 border-t border-white/10">

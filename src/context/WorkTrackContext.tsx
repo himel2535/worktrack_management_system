@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import {
   WorkTrackWorkTimerProvider,
   WorkTrackBreakTimerProvider,
@@ -20,15 +20,8 @@ import {
   TaskStatus,
   ProjectStatus,
 } from "@/lib/types";
-
-import { tasks as initialTasks } from "@/lib/mock-data/tasks";
-import { projects as initialProjects } from "@/lib/mock-data/projects";
-import { breakRecords as initialBreaks } from "@/lib/mock-data/breaks";
-import { hourlyUpdates as initialHourlyUpdates } from "@/lib/mock-data/hourly-updates";
-import { activeWorkSession as initialWorkSession } from "@/lib/mock-data/work-session";
-import { attendanceRecords as initialAttendance } from "@/lib/mock-data/attendance";
-import { todayTimeline as initialTimeline } from "@/lib/mock-data/timeline";
-import { currentUser as initialUser } from "@/lib/mock-data/user";
+import { apiFetch } from "@/lib/api/client";
+import { useAuth } from "@/context/AuthContext";
 
 export interface ActiveBreakState {
   id: string;
@@ -41,223 +34,208 @@ export interface ActiveBreakState {
 }
 
 export interface WorkTrackContextType {
-  // User & Settings
   user: User;
   updateUser: (user: Partial<User>) => void;
   todayNote: string;
   setTodayNote: (note: string) => void;
-
-  // Work Session Actions
-  startWorkSession: () => void;
+  startWorkSession: (opts?: { startPhotoUrl?: string }) => void;
   pauseWorkSession: () => void;
-  stopWorkSession: () => void;
-
-  // Attendance
+  stopWorkSession: (opts?: { endPhotoUrl?: string }) => void;
   isClockedIn: boolean;
   clockInTime: string;
   attendanceRecords: AttendanceRecord[];
   clockIn: () => void;
   clockOut: () => void;
-
-  // Breaks
   breaks: BreakRecord[];
   activeBreak: ActiveBreakState | null;
   startBreak: (type: BreakType, reason?: string) => void;
   endBreak: () => void;
-
-  // Tasks
   tasks: Task[];
   addTask: (task: Omit<Task, "id" | "createdAt" | "progress">) => void;
   editTask: (id: string, updated: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   updateTaskStatus: (id: string, status: TaskStatus) => void;
-
-  // Projects
   projects: Project[];
   addProject: (project: Omit<Project, "id" | "tasksCompleted" | "tasksTotal" | "progress">) => void;
   editProject: (id: string, updated: Partial<Project>) => void;
   deleteProject: (id: string) => void;
-
-  // Hourly Updates
   hourlyUpdates: HourlyUpdate[];
   submitHourlyUpdate: (title: string, description: string) => void;
-
-  // Gamification Points & Timeline
   todayPoints: number;
   timeline: TimelineEvent[];
-
-  // Modal Controls
+  canManageProjects: boolean;
+  canManageTasks: boolean;
+  refreshData: () => Promise<void>;
   taskModalState: { isOpen: boolean; task?: Task | null };
   openTaskModal: (task?: Task | null) => void;
   closeTaskModal: () => void;
-
   projectModalState: { isOpen: boolean; project?: Project | null };
   openProjectModal: (project?: Project | null) => void;
   closeProjectModal: () => void;
-
   isBreakModalOpen: boolean;
   openBreakModal: () => void;
   closeBreakModal: () => void;
-
   isHourlyUpdateModalOpen: boolean;
   openHourlyUpdateModal: () => void;
   closeHourlyUpdateModal: () => void;
-
   isSessionHistoryModalOpen: boolean;
   openSessionHistoryModal: () => void;
   closeSessionHistoryModal: () => void;
 }
 
-const STORAGE_KEY = "worktrack_app_state_v2";
-
 const WorkTrackContext = createContext<WorkTrackContextType | undefined>(undefined);
 
+function mapDoc<T extends Record<string, unknown>>(doc: T): T & { id: string } {
+  const id = (doc._id as string)?.toString?.() || (doc.id as string) || "";
+  return { ...doc, id } as T & { id: string };
+}
+
+const defaultWorkSession: WorkSession = {
+  isActive: false,
+  projectId: "",
+  projectName: "",
+  taskId: "",
+  taskName: "",
+  startedAt: "",
+  estimatedEnd: "",
+  totalWorkTime: "00:00:00",
+  nextUpdateDueIn: "60:00",
+  updateProgress: 0,
+  updateInterval: "60 min",
+  lastUpdateAt: "",
+  lastUpdateStatus: "upcoming",
+  breakTaken: "0m",
+};
+
 export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // State Initialization
-  const [user, setUser] = useState<User>(initialUser);
-  const [todayNote, setTodayNoteState] = useState<string>(
-    "Will continue API integration and connect with backend team for subscription endpoints."
+  const { user: authUser } = useAuth();
+
+  const user: User = useMemo(
+    () => ({
+      id: authUser?.id || "",
+      name: authUser?.name || "",
+      role: authUser?.designation || authUser?.role || "",
+      email: authUser?.email || "",
+      avatar: authUser?.avatar || "",
+      designation: authUser?.designation,
+    }),
+    [authUser]
   );
 
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [breaks, setBreaks] = useState<BreakRecord[]>(initialBreaks);
-  const [hourlyUpdates, setHourlyUpdates] = useState<HourlyUpdate[]>(initialHourlyUpdates);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(initialAttendance);
-  const [timeline, setTimeline] = useState<TimelineEvent[]>(initialTimeline);
-  const [todayPoints, setTodayPoints] = useState<number>(3);
+  const canManageProjects = authUser?.role === "admin" || authUser?.role === "manager";
+  const canManageTasks = authUser?.role === "admin" || authUser?.role === "manager";
 
-  // Work Timer State
-  const [workSession, setWorkSession] = useState<WorkSession>(initialWorkSession);
-  const [isWorkTimerRunning, setIsWorkTimerRunning] = useState<boolean>(true);
-  const [activeWorkSeconds, setActiveWorkSeconds] = useState<number>(16338); // ~04:32:18
+  const [todayNote, setTodayNoteState] = useState("");
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [breaks, setBreaks] = useState<BreakRecord[]>([]);
+  const [hourlyUpdates, setHourlyUpdates] = useState<HourlyUpdate[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+  const [todayPoints, setTodayPoints] = useState(0);
 
-  // Attendance State
-  const [isClockedIn, setIsClockedIn] = useState<boolean>(true);
-  const [clockInTime, setClockInTime] = useState<string>("09:04 AM");
-
-  // Active Break State
+  const [workSession, setWorkSession] = useState<WorkSession>(defaultWorkSession);
+  const [isWorkTimerRunning, setIsWorkTimerRunning] = useState(false);
+  const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState("");
   const [activeBreak, setActiveBreak] = useState<ActiveBreakState | null>(null);
-  const [activeBreakSeconds, setActiveBreakSeconds] = useState<number>(0);
+  const [activeBreakSeconds, setActiveBreakSeconds] = useState(0);
 
-  // Modals
-  const [taskModalState, setTaskModalState] = useState<{ isOpen: boolean; task?: Task | null }>({
-    isOpen: false,
-    task: null,
-  });
-  const [projectModalState, setProjectModalState] = useState<{ isOpen: boolean; project?: Project | null }>({
-    isOpen: false,
-    project: null,
-  });
-  const [isBreakModalOpen, setIsBreakModalOpen] = useState<boolean>(false);
-  const [isHourlyUpdateModalOpen, setIsHourlyUpdateModalOpen] = useState<boolean>(false);
-  const [isSessionHistoryModalOpen, setIsSessionHistoryModalOpen] = useState<boolean>(false);
+  const [taskModalState, setTaskModalState] = useState<{ isOpen: boolean; task?: Task | null }>({ isOpen: false, task: null });
+  const [projectModalState, setProjectModalState] = useState<{ isOpen: boolean; project?: Project | null }>({ isOpen: false, project: null });
+  const [isBreakModalOpen, setIsBreakModalOpen] = useState(false);
+  const [isHourlyUpdateModalOpen, setIsHourlyUpdateModalOpen] = useState(false);
+  const [isSessionHistoryModalOpen, setIsSessionHistoryModalOpen] = useState(false);
 
-  // Load state from localStorage on mount
-  useEffect(() => {
+  const refreshData = useCallback(async () => {
+    if (!authUser) return;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.tasks) setTasks(parsed.tasks);
-        if (parsed.projects) setProjects(parsed.projects);
-        if (parsed.breaks) setBreaks(parsed.breaks);
-        if (parsed.hourlyUpdates) setHourlyUpdates(parsed.hourlyUpdates);
-        if (parsed.attendanceRecords) setAttendanceRecords(parsed.attendanceRecords);
-        if (parsed.timeline) setTimeline(parsed.timeline);
-        if (parsed.todayPoints !== undefined) setTodayPoints(parsed.todayPoints);
-        if (parsed.user) setUser(parsed.user);
-        if (parsed.todayNote) setTodayNoteState(parsed.todayNote);
-        if (parsed.activeWorkSeconds) setActiveWorkSeconds(parsed.activeWorkSeconds);
-        if (parsed.isWorkTimerRunning !== undefined) setIsWorkTimerRunning(parsed.isWorkTimerRunning);
-        if (parsed.isClockedIn !== undefined) setIsClockedIn(parsed.isClockedIn);
-        if (parsed.clockInTime) setClockInTime(parsed.clockInTime);
-        if (parsed.activeBreak) setActiveBreak(parsed.activeBreak);
+      const [tasksData, projectsData, breaksData, updatesData, attendanceData, timelineData, pointsData, noteData, sessionData] =
+        await Promise.all([
+          apiFetch<Record<string, unknown>[]>("/tasks").catch(() => []),
+          apiFetch<Record<string, unknown>[]>("/projects").catch(() => []),
+          apiFetch<Record<string, unknown>[]>("/breaks").catch(() => []),
+          apiFetch<Record<string, unknown>[]>("/hourly-updates").catch(() => []),
+          apiFetch<Record<string, unknown>[]>("/attendance").catch(() => []),
+          apiFetch<Record<string, unknown>[]>("/performance/timeline").catch(() => []),
+          apiFetch<{ todayPoints: number }>("/performance/points/summary").catch(() => ({ todayPoints: 0 })),
+          apiFetch<{ note: string }>("/performance/note").catch(() => ({ note: "" })),
+          apiFetch<{ session: Record<string, unknown> | null; activeBreak: Record<string, unknown> | null }>("/work-sessions/current").catch(() => ({ session: null, activeBreak: null })),
+        ]);
+
+      setTasks(tasksData.map((t) => mapDoc(t)) as unknown as Task[]);
+      setProjects(projectsData.map((p) => mapDoc(p)) as unknown as Project[]);
+      setBreaks(breaksData.map((b) => mapDoc(b)) as unknown as BreakRecord[]);
+      setHourlyUpdates(updatesData.map((u) => mapDoc(u)) as unknown as HourlyUpdate[]);
+      setAttendanceRecords(attendanceData.map((a) => mapDoc(a)) as unknown as AttendanceRecord[]);
+      setTimeline(timelineData.map((e) => mapDoc(e)) as unknown as TimelineEvent[]);
+      setTodayPoints(pointsData.todayPoints);
+      setTodayNoteState(noteData.note || "");
+
+      const att = await apiFetch<{ inTime?: string } | { isClockedIn: boolean }>("/attendance/today").catch(() => null);
+      if (att && "inTime" in att && att.inTime) {
+        setIsClockedIn(true);
+        setClockInTime(att.inTime);
+      }
+
+      if (sessionData.session) {
+        const s = sessionData.session;
+        setIsWorkTimerRunning(!!s.isActive);
+        setActiveWorkSeconds((s.totalWorkSeconds as number) || 0);
+        setWorkSession({
+          ...defaultWorkSession,
+          isActive: !!s.isActive,
+          projectName: (s.projectName as string) || "",
+          taskName: (s.taskName as string) || "",
+          totalWorkTime: formatSecondsToHMS((s.totalWorkSeconds as number) || 0),
+        });
+      }
+
+      if (sessionData.activeBreak) {
+        const b = sessionData.activeBreak;
+        setActiveBreak({
+          id: (b._id as string)?.toString?.() || "",
+          startTime: b.startTime as string,
+          startTimestamp: Date.now(),
+          type: b.type as BreakType,
+          reason: b.reason as string,
+        });
       }
     } catch (e) {
-      console.error("Failed to parse stored worktrack state", e);
+      console.error("Failed to load data", e);
     }
-  }, []);
+  }, [authUser]);
 
-  // Sync state to localStorage
   useEffect(() => {
-    try {
-      const stateToSave = {
-        tasks,
-        projects,
-        breaks,
-        hourlyUpdates,
-        attendanceRecords,
-        timeline,
-        todayPoints,
-        user,
-        todayNote,
-        activeWorkSeconds,
-        isWorkTimerRunning,
-        isClockedIn,
-        clockInTime,
-        activeBreak,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-    } catch (e) {
-      console.error("Failed to save worktrack state", e);
-    }
-  }, [
-    tasks,
-    projects,
-    breaks,
-    hourlyUpdates,
-    attendanceRecords,
-    timeline,
-    todayPoints,
-    user,
-    todayNote,
-    activeWorkSeconds,
-    isWorkTimerRunning,
-    isClockedIn,
-    clockInTime,
-    activeBreak,
-  ]);
+    if (authUser) refreshData();
+  }, [authUser, refreshData]);
 
-  // Live Work Timer Ticker
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isWorkTimerRunning && isClockedIn && !activeBreak) {
-      interval = setInterval(() => {
-        setActiveWorkSeconds((prev) => prev + 1);
-      }, 1000);
+      interval = setInterval(() => setActiveWorkSeconds((p) => p + 1), 1000);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => { if (interval) clearInterval(interval); };
   }, [isWorkTimerRunning, isClockedIn, activeBreak]);
 
-  // Live Active Break Ticker
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (activeBreak) {
-      interval = setInterval(() => {
-        setActiveBreakSeconds((prev) => prev + 1);
-      }, 1000);
+      interval = setInterval(() => setActiveBreakSeconds((p) => p + 1), 1000);
     } else {
       setActiveBreakSeconds(0);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => { if (interval) clearInterval(interval); };
   }, [activeBreak]);
 
-  // Format seconds helper
   const formatSecondsToHMS = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return [hours, minutes, seconds]
-      .map((v) => (v < 10 ? `0${v}` : `${v}`))
-      .join(":");
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return [h, m, s].map((v) => (v < 10 ? `0${v}` : `${v}`)).join(":");
   };
 
-  // Sync formatted time strings back to activeWorkSession object
   useEffect(() => {
     setWorkSession((prev) => ({
       ...prev,
@@ -266,274 +244,123 @@ export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   }, [activeWorkSeconds, isWorkTimerRunning, activeBreak]);
 
-  // User Actions
-  const updateUser = (updated: Partial<User>) => {
-    setUser((prev) => ({ ...prev, ...updated }));
+  const updateUser = async (updated: Partial<User>) => {
+    await refreshData();
   };
 
-  const setTodayNote = (note: string) => {
+  const setTodayNote = async (note: string) => {
     setTodayNoteState(note);
+    await apiFetch("/performance/note", { method: "PUT", body: JSON.stringify({ note }) });
   };
 
-  // Timer Actions
-  const startWorkSession = () => {
-    if (!isClockedIn) {
-      clockIn();
-    }
+  const startWorkSession = async (opts?: { startPhotoUrl?: string }) => {
+    if (!isClockedIn) await clockIn();
+    await apiFetch("/work-sessions/start", { method: "POST", body: JSON.stringify({ startPhotoUrl: opts?.startPhotoUrl }) });
     setIsWorkTimerRunning(true);
-    if (activeBreak) {
-      endBreak();
-    }
+    if (activeBreak) await endBreak();
+    await refreshData();
   };
 
-  const pauseWorkSession = () => {
+  const pauseWorkSession = async () => {
+    await apiFetch("/work-sessions/pause", { method: "POST" });
     setIsWorkTimerRunning(false);
   };
 
-  const stopWorkSession = () => {
+  const stopWorkSession = async (opts?: { endPhotoUrl?: string }) => {
+    await apiFetch("/work-sessions/stop", { method: "POST", body: JSON.stringify({ endPhotoUrl: opts?.endPhotoUrl }) });
     setIsWorkTimerRunning(false);
+    await refreshData();
   };
 
-  // Attendance Actions
-  const clockIn = () => {
-    const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const clockIn = async () => {
+    const data = await apiFetch<{ inTime: string }>("/attendance/check-in", { method: "POST" });
     setIsClockedIn(true);
-    setClockInTime(nowStr);
+    setClockInTime(data.inTime);
     setIsWorkTimerRunning(true);
-
-    const newEvent: TimelineEvent = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title: "Clocked In",
-      description: "Started office shift",
-      type: "present",
-      badge: "On Time",
-      badgeVariant: "success",
-    };
-    setTimeline((prev) => [newEvent, ...prev]);
+    await refreshData();
   };
 
-  const clockOut = () => {
-    const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const clockOut = async () => {
+    await apiFetch("/attendance/check-out", { method: "POST" });
     setIsClockedIn(false);
     setIsWorkTimerRunning(false);
-    if (activeBreak) {
-      endBreak();
-    }
-
-    const newEvent: TimelineEvent = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title: "Clocked Out",
-      description: "Finished office shift",
-      type: "work_start",
-    };
-    setTimeline((prev) => [newEvent, ...prev]);
+    if (activeBreak) await endBreak();
+    await refreshData();
   };
 
-  // Break Actions
-  const startBreak = (type: BreakType, reason?: string) => {
-    const now = new Date();
-    const nowStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-    const newActiveBreak: ActiveBreakState = {
-      id: Date.now().toString(),
-      startTime: nowStr,
-      startTimestamp: now.getTime(),
-      type,
-      reason,
-      projectName: workSession.projectName,
-      taskName: workSession.taskName,
+  const startBreak = async (type: BreakType, reason?: string) => {
+    const defaults: Record<BreakType, string> = {
+      personal: "Personal break",
+      lunch: "Lunch break",
+      prayer: "Prayer break",
+      other: "",
     };
-
-    setActiveBreak(newActiveBreak);
+    const breakReason = reason?.trim() || defaults[type];
+    await apiFetch("/breaks/start", { method: "POST", body: JSON.stringify({ type, reason: breakReason }) });
     setIsWorkTimerRunning(false);
-
-    // Add to timeline
-    const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-    const newEvent: TimelineEvent = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title: `Break Started (${typeLabel})`,
-      description: reason || "Taking a short break",
-      type: "break_start",
-    };
-    setTimeline((prev) => [newEvent, ...prev]);
+    await refreshData();
   };
 
-  const endBreak = () => {
-    if (!activeBreak) return;
-    const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const formattedDuration = formatSecondsToHMS(activeBreakSeconds);
-
-    const newBreakRecord: BreakRecord = {
-      id: activeBreak.id,
-      startTime: activeBreak.startTime,
-      endTime: nowStr,
-      type: activeBreak.type,
-      duration: formattedDuration,
-      projectName: activeBreak.projectName,
-      taskName: activeBreak.taskName,
-      reason: activeBreak.reason,
-      ongoing: false,
-    };
-
-    setBreaks((prev) => [newBreakRecord, ...prev]);
+  const endBreak = async () => {
+    await apiFetch("/breaks/end", { method: "POST" });
     setActiveBreak(null);
     setIsWorkTimerRunning(true);
-
-    const newEvent: TimelineEvent = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title: "Break Ended",
-      description: `Resumed work (${formattedDuration})`,
-      type: "break_end",
-    };
-    setTimeline((prev) => [newEvent, ...prev]);
+    await refreshData();
   };
 
-  // Task Actions
-  const addTask = (newTaskData: Omit<Task, "id" | "createdAt" | "progress">) => {
-    const newTask: Task = {
-      ...newTaskData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split("T")[0],
-      progress: newTaskData.status === "completed" ? 100 : 0,
-    };
-    setTasks((prev) => [newTask, ...prev]);
-
-    // Recalculate project tasks total
-    setProjects((prev) =>
-      prev.map((proj) => {
-        if (proj.id === newTask.projectId || proj.name === newTask.projectName) {
-          const total = proj.tasksTotal + 1;
-          const completed = newTask.status === "completed" ? proj.tasksCompleted + 1 : proj.tasksCompleted;
-          return {
-            ...proj,
-            tasksTotal: total,
-            tasksCompleted: completed,
-            progress: Math.round((completed / total) * 100),
-          };
-        }
-        return proj;
-      })
-    );
+  const addTask = async (data: Omit<Task, "id" | "createdAt" | "progress">) => {
+    await apiFetch("/tasks", { method: "POST", body: JSON.stringify(data) });
+    await refreshData();
   };
 
-  const editTask = (id: string, updated: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === id) {
-          return { ...task, ...updated };
-        }
-        return task;
-      })
-    );
+  const editTask = async (id: string, updated: Partial<Task>) => {
+    await apiFetch(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(updated) });
+    await refreshData();
   };
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+  const deleteTask = async (id: string) => {
+    await apiFetch(`/tasks/${id}`, { method: "DELETE" });
+    await refreshData();
   };
 
-  const updateTaskStatus = (id: string, status: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === id) {
-          const newProgress = status === "completed" ? 100 : status === "in_progress" ? 50 : 0;
-          return { ...task, status, progress: newProgress };
-        }
-        return task;
-      })
-    );
+  const updateTaskStatus = async (id: string, status: TaskStatus) => {
+    await apiFetch(`/tasks/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+    await refreshData();
   };
 
-  // Project Actions
-  const addProject = (
-    newProjData: Omit<Project, "id" | "tasksCompleted" | "tasksTotal" | "progress">
-  ) => {
-    const newProject: Project = {
-      ...newProjData,
-      id: Date.now().toString(),
-      tasksCompleted: 0,
-      tasksTotal: 0,
-      progress: 0,
-    };
-    setProjects((prev) => [newProject, ...prev]);
+  const addProject = async (data: Omit<Project, "id" | "tasksCompleted" | "tasksTotal" | "progress">) => {
+    await apiFetch("/projects", { method: "POST", body: JSON.stringify(data) });
+    await refreshData();
   };
 
-  const editProject = (id: string, updated: Partial<Project>) => {
-    setProjects((prev) =>
-      prev.map((proj) => {
-        if (proj.id === id) {
-          return { ...proj, ...updated };
-        }
-        return proj;
-      })
-    );
+  const editProject = async (id: string, updated: Partial<Project>) => {
+    await apiFetch(`/projects/${id}`, { method: "PATCH", body: JSON.stringify(updated) });
+    await refreshData();
   };
 
-  const deleteProject = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+  const deleteProject = async (id: string) => {
+    await apiFetch(`/projects/${id}`, { method: "DELETE" });
+    await refreshData();
   };
 
-  // Hourly Update Actions
-  const submitHourlyUpdate = (title: string, description: string) => {
-    const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const newUpdate: HourlyUpdate = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title,
-      description,
-      status: "on_time",
-      points: 3,
-    };
-
-    setHourlyUpdates((prev) => [newUpdate, ...prev]);
-    setTodayPoints((prev) => prev + 3);
-
-    const newEvent: TimelineEvent = {
-      id: Date.now().toString(),
-      time: nowStr,
-      title: `Update Submitted: ${title}`,
-      description,
-      type: "update",
-      points: 3,
-      badge: "+3 Pts",
-      badgeVariant: "success",
-    };
-    setTimeline((prev) => [newEvent, ...prev]);
+  const submitHourlyUpdate = async (title: string, description: string) => {
+    await apiFetch("/hourly-updates", { method: "POST", body: JSON.stringify({ title, description }) });
+    await refreshData();
   };
 
-  // Modal handlers
-  const openTaskModal = (task: Task | null = null) => {
-    setTaskModalState({ isOpen: true, task });
-  };
-  const closeTaskModal = () => {
-    setTaskModalState({ isOpen: false, task: null });
-  };
-
-  const openProjectModal = (project: Project | null = null) => {
-    setProjectModalState({ isOpen: true, project });
-  };
-  const closeProjectModal = () => {
-    setProjectModalState({ isOpen: false, project: null });
-  };
-
+  const openTaskModal = (task: Task | null = null) => setTaskModalState({ isOpen: true, task });
+  const closeTaskModal = () => setTaskModalState({ isOpen: false, task: null });
+  const openProjectModal = (project: Project | null = null) => setProjectModalState({ isOpen: true, project });
+  const closeProjectModal = () => setProjectModalState({ isOpen: false, project: null });
   const openBreakModal = () => setIsBreakModalOpen(true);
   const closeBreakModal = () => setIsBreakModalOpen(false);
-
   const openHourlyUpdateModal = () => setIsHourlyUpdateModalOpen(true);
   const closeHourlyUpdateModal = () => setIsHourlyUpdateModalOpen(false);
-
   const openSessionHistoryModal = () => setIsSessionHistoryModalOpen(true);
   const closeSessionHistoryModal = () => setIsSessionHistoryModalOpen(false);
 
   const workTimerContextValue = useMemo<WorkTrackWorkTimerContextType>(
-    () => ({
-      workSession,
-      isWorkTimerRunning,
-      activeWorkSeconds,
-    }),
+    () => ({ workSession, isWorkTimerRunning, activeWorkSeconds }),
     [workSession, isWorkTimerRunning, activeWorkSeconds]
   );
 
@@ -544,70 +371,23 @@ export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const mainContextValue = useMemo<WorkTrackContextType>(
     () => ({
-      user,
-      updateUser,
-      todayNote,
-      setTodayNote,
-      startWorkSession,
-      pauseWorkSession,
-      stopWorkSession,
-      isClockedIn,
-      clockInTime,
-      attendanceRecords,
-      clockIn,
-      clockOut,
-      breaks,
-      activeBreak,
-      startBreak,
-      endBreak,
-      tasks,
-      addTask,
-      editTask,
-      deleteTask,
-      updateTaskStatus,
-      projects,
-      addProject,
-      editProject,
-      deleteProject,
-      hourlyUpdates,
-      submitHourlyUpdate,
-      todayPoints,
-      timeline,
-      taskModalState,
-      openTaskModal,
-      closeTaskModal,
-      projectModalState,
-      openProjectModal,
-      closeProjectModal,
-      isBreakModalOpen,
-      openBreakModal,
-      closeBreakModal,
-      isHourlyUpdateModalOpen,
-      openHourlyUpdateModal,
-      closeHourlyUpdateModal,
-      isSessionHistoryModalOpen,
-      openSessionHistoryModal,
-      closeSessionHistoryModal,
+      user, updateUser, todayNote, setTodayNote,
+      startWorkSession, pauseWorkSession, stopWorkSession,
+      isClockedIn, clockInTime, attendanceRecords, clockIn, clockOut,
+      breaks, activeBreak, startBreak, endBreak,
+      tasks, addTask, editTask, deleteTask, updateTaskStatus,
+      projects, addProject, editProject, deleteProject,
+      hourlyUpdates, submitHourlyUpdate, todayPoints, timeline,
+      canManageProjects, canManageTasks, refreshData,
+      taskModalState, openTaskModal, closeTaskModal,
+      projectModalState, openProjectModal, closeProjectModal,
+      isBreakModalOpen, openBreakModal, closeBreakModal,
+      isHourlyUpdateModalOpen, openHourlyUpdateModal, closeHourlyUpdateModal,
+      isSessionHistoryModalOpen, openSessionHistoryModal, closeSessionHistoryModal,
     }),
-    [
-      user,
-      todayNote,
-      isClockedIn,
-      clockInTime,
-      attendanceRecords,
-      breaks,
-      activeBreak,
-      tasks,
-      projects,
-      hourlyUpdates,
-      todayPoints,
-      timeline,
-      taskModalState,
-      projectModalState,
-      isBreakModalOpen,
-      isHourlyUpdateModalOpen,
-      isSessionHistoryModalOpen,
-    ]
+    [user, todayNote, isClockedIn, clockInTime, attendanceRecords, breaks, activeBreak,
+      tasks, projects, hourlyUpdates, todayPoints, timeline, canManageProjects, canManageTasks,
+      taskModalState, projectModalState, isBreakModalOpen, isHourlyUpdateModalOpen, isSessionHistoryModalOpen, refreshData]
   );
 
   return (
@@ -623,8 +403,6 @@ export const WorkTrackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 export const useWorkTrack = () => {
   const context = useContext(WorkTrackContext);
-  if (!context) {
-    throw new Error("useWorkTrack must be used within a WorkTrackProvider");
-  }
+  if (!context) throw new Error("useWorkTrack must be used within a WorkTrackProvider");
   return context;
 };

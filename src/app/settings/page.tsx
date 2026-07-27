@@ -6,31 +6,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkTrack } from "@/context/WorkTrackContext";
-import { User, Save, CheckCircle2, Shield, Bell, Palette } from "lucide-react";
+import { useTheme } from "next-themes";
+import { apiFetch } from "@/lib/api/client";
+import { User, Save, CheckCircle2, Shield, Bell, Palette, Sun, Moon } from "lucide-react";
 
 export default function SettingsPage() {
   const { user, updateUser, todayNote, setTodayNote } = useWorkTrack();
+  const { theme, setTheme } = useTheme();
   const [name, setName] = useState(user.name);
   const [designation, setDesignation] = useState(user.designation || user.role);
   const [email, setEmail] = useState(user.email);
   const [note, setNote] = useState(todayNote);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUser({ name, designation, role: designation, email });
-    setTodayNote(note);
+    await updateUser({ name, designation, role: designation, email });
+    await setTodayNote(note);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiFetch("/auth/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) });
+      setPasswordMsg("Password updated successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (err) {
+      setPasswordMsg(err instanceof Error ? err.message : "Failed to update password");
+    }
+  };
+
   return (
     <div className="page-stack">
-      <PageHeader
-        title="Settings"
-        subtitle="Manage your profile, preferences and daily work notes."
-        showClock
-      />
+      <PageHeader title="Settings" subtitle="Manage your profile, preferences and daily work notes." showClock />
 
       <div className="max-w-4xl space-y-6">
         <form onSubmit={handleSave} className="panel-card border border-white/10 bg-[#0F172A] space-y-6">
@@ -41,84 +55,60 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">Profile Information</h3>
-                <p className="text-xs text-white/50">Update your account details and public display info</p>
+                <p className="text-xs text-white/50">Update your account details and daily notes</p>
               </div>
             </div>
             {savedSuccess && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 rounded-lg animate-pulse">
-                <CheckCircle2 className="h-4 w-4" />
-                Saved Successfully!
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
+                <CheckCircle2 className="h-4 w-4" /> Saved!
               </span>
             )}
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-white/70">Full Name</label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder-white/40"
-                required
-              />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="bg-white/5 border-white/10 text-white" required />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-white/70">Job Designation</label>
-              <Input
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder-white/40"
-                required
-              />
+              <Input value={designation} onChange={(e) => setDesignation(e.target.value)} className="bg-white/5 border-white/10 text-white" required />
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-xs font-medium text-white/70">Email Address</label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder-white/40"
-                required
-              />
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-white/5 border-white/10 text-white" required />
             </div>
           </div>
-
           <div className="border-t border-white/10 pt-4 space-y-2">
             <label className="text-xs font-medium text-white/70">Daily Note / Focus Goal</label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="What are your key goals for today?"
-              className="bg-white/5 border-white/10 text-white placeholder-white/40 min-h-[100px]"
-            />
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What are your key goals for today?" className="bg-white/5 border-white/10 text-white min-h-[100px]" />
           </div>
-
           <div className="flex justify-end pt-2">
-            <Button
-              type="submit"
-              className="bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] font-bold gap-2 rounded-xl py-2 px-6"
-            >
-              <Save className="h-4 w-4" />
-              Save Changes
-            </Button>
+            <Button type="submit" className="gap-2"><Save className="h-4 w-4" /> Save Changes</Button>
           </div>
         </form>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="panel-card border border-white/10 bg-[#0F172A] p-4 space-y-2">
-            <Shield className="h-6 w-6 text-emerald-400" />
-            <h4 className="font-bold text-white text-sm">Security & Privacy</h4>
-            <p className="text-xs text-white/50">Local data storage active with end-to-end browser encryption.</p>
+        <form onSubmit={handlePasswordChange} className="panel-card space-y-4">
+          <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+            <Shield className="h-5 w-5 text-emerald-400" />
+            <h3 className="font-bold text-white">Change Password</h3>
           </div>
-          <div className="panel-card border border-white/10 bg-[#0F172A] p-4 space-y-2">
-            <Bell className="h-6 w-6 text-sky-400" />
-            <h4 className="font-bold text-white text-sm">Notifications</h4>
-            <p className="text-xs text-white/50">Hourly update reminders enabled for maximum productivity.</p>
+          <Input type="password" placeholder="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="bg-white/5 border-white/10 text-white" required />
+          <Input type="password" placeholder="New Password (min 6 chars)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="bg-white/5 border-white/10 text-white" required minLength={6} />
+          {passwordMsg && <p className="text-sm text-emerald-400">{passwordMsg}</p>}
+          <Button type="submit">Update Password</Button>
+        </form>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="panel-card p-4 space-y-3">
+            <div className="flex items-center gap-2"><Bell className="h-5 w-5 text-sky-400" /><h4 className="font-bold text-white text-sm">Notifications</h4></div>
+            <p className="text-xs text-white/50">Hourly update reminders are sent 10 minutes before due time.</p>
           </div>
-          <div className="panel-card border border-white/10 bg-[#0F172A] p-4 space-y-2">
-            <Palette className="h-6 w-6 text-purple-400" />
-            <h4 className="font-bold text-white text-sm">Theme & Aesthetic</h4>
-            <p className="text-xs text-white/50">Dark glassmorphism theme with Emerald accent active.</p>
+          <div className="panel-card p-4 space-y-3">
+            <div className="flex items-center gap-2"><Palette className="h-5 w-5 text-purple-400" /><h4 className="font-bold text-white text-sm">Theme</h4></div>
+            <div className="flex gap-2">
+              <Button variant={theme === "dark" ? "default" : "glass"} size="sm" onClick={() => setTheme("dark")}><Moon className="h-4 w-4 mr-1" /> Dark</Button>
+              <Button variant={theme === "light" ? "default" : "glass"} size="sm" onClick={() => setTheme("light")}><Sun className="h-4 w-4 mr-1" /> Light</Button>
+            </div>
           </div>
         </div>
       </div>

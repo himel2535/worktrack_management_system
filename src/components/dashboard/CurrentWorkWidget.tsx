@@ -248,7 +248,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
         {isWorkTimerRunning ? (
           <button
             type="button"
-            onClick={pauseWorkSession}
+            onClick={() => pauseWorkSession()}
             className={`${actionButtonBase} bg-red-950/90 text-red-300 border-red-800/80 shadow-[inset_0_-2px_0_0_#DC2626] hover:bg-red-900 hover:border-red-700`}
           >
             <Pause className="h-4 w-4 text-red-300" />
@@ -257,7 +257,7 @@ export function CurrentWorkWidget({ theme = "glass" }: CurrentWorkWidgetProps) {
         ) : (
           <button
             type="button"
-            onClick={startWorkSession}
+            onClick={() => startWorkSession()}
             className={`${actionButtonBase} bg-emerald-950/90 text-emerald-300 border-emerald-800/80 shadow-[inset_0_-2px_0_0_#059669] hover:bg-emerald-900 hover:border-emerald-700`}
           >
             <Play className="h-4 w-4 fill-emerald-300 text-emerald-300" />

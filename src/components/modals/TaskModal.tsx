@@ -17,6 +17,8 @@ export function TaskModal() {
   const [deadline, setDeadline] = useState("");
   const [estimatedTime, setEstimatedTime] = useState("4h");
   const [taskType, setTaskType] = useState("Development");
+  const [deptType, setDeptType] = useState("development");
+  const [deptFields, setDeptFields] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (task) {
@@ -72,7 +74,8 @@ export function TaskModal() {
         estimatedTime,
         spentTime: "0h",
         taskType,
-      });
+        departmentFields: deptFields,
+      } as Omit<import("@/lib/types").Task, "id" | "createdAt" | "progress"> & { departmentFields?: Record<string, string> });
     }
     closeTaskModal();
   };
@@ -187,6 +190,67 @@ export function TaskModal() {
               />
             </div>
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-white/70 mb-1">Department</label>
+            <select value={deptType} onChange={(e) => { setDeptType(e.target.value); setDeptFields({}); }}
+              className="w-full rounded-xl border border-white/15 bg-[#111827] px-3.5 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none">
+              <option value="development">Development</option>
+              <option value="catering">Catering</option>
+              <option value="marketing">Marketing</option>
+            </select>
+          </div>
+
+          {deptType === "development" && (
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div><label className="text-xs text-white/60">Type</label>
+                <select value={deptFields.devType || ""} onChange={(e) => setDeptFields({ ...deptFields, devType: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-[#111827] px-2 py-1.5 text-sm text-white">
+                  <option value="Feature">Feature</option><option value="Bug Fix">Bug Fix</option>
+                  <option value="Code Review">Code Review</option><option value="Deployment">Deployment</option>
+                </select></div>
+              <div><label className="text-xs text-white/60">GitHub URL</label>
+                <input value={deptFields.githubUrl || ""} onChange={(e) => setDeptFields({ ...deptFields, githubUrl: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+              <div className="col-span-2"><label className="text-xs text-white/60">Jira URL</label>
+                <input value={deptFields.jiraUrl || ""} onChange={(e) => setDeptFields({ ...deptFields, jiraUrl: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+            </div>
+          )}
+
+          {deptType === "catering" && (
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div><label className="text-xs text-white/60">Order/Event ID</label>
+                <input value={deptFields.orderEventId || ""} onChange={(e) => setDeptFields({ ...deptFields, orderEventId: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+              <div><label className="text-xs text-white/60">Event Date</label>
+                <input type="date" value={deptFields.eventDate || ""} onChange={(e) => setDeptFields({ ...deptFields, eventDate: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+              <div className="col-span-2"><label className="text-xs text-white/60">Prep Type</label>
+                <select value={deptFields.prepType || ""} onChange={(e) => setDeptFields({ ...deptFields, prepType: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-[#111827] px-2 py-1.5 text-sm text-white">
+                  <option value="Order Prep">Order Prep</option><option value="Inventory">Inventory</option>
+                  <option value="Client Meeting">Client Meeting</option>
+                </select></div>
+            </div>
+          )}
+
+          {deptType === "marketing" && (
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="col-span-2"><label className="text-xs text-white/60">Campaign Name</label>
+                <input value={deptFields.campaignName || ""} onChange={(e) => setDeptFields({ ...deptFields, campaignName: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+              <div><label className="text-xs text-white/60">Platform</label>
+                <select value={deptFields.platform || ""} onChange={(e) => setDeptFields({ ...deptFields, platform: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-[#111827] px-2 py-1.5 text-sm text-white">
+                  <option value="Facebook">Facebook</option><option value="Instagram">Instagram</option>
+                  <option value="Google Ads">Google Ads</option>
+                </select></div>
+              <div><label className="text-xs text-white/60">Content Type</label>
+                <input value={deptFields.contentType || ""} onChange={(e) => setDeptFields({ ...deptFields, contentType: e.target.value })}
+                  className="w-full mt-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-sm text-white" /></div>
+            </div>
+          )}
 
           <div className="pt-3 flex items-center justify-end gap-2 border-t border-white/10">
             <button

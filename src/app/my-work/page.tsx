@@ -6,11 +6,11 @@ import { CurrentWorkWidget } from "@/components/dashboard/CurrentWorkWidget";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PointsIndicator } from "@/components/shared/PointsIndicator";
 import { ProgressBar } from "@/components/shared/ProgressBar";
+import { CameraCapture } from "@/components/shared/CameraCapture";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkTrack } from "@/context/WorkTrackContext";
 import { useWorkTrackWorkTimer } from "@/context/WorkTrackTimerContext";
-import { todayNote } from "@/lib/mock-data/work-session";
 import {
   FolderKanban,
   CheckSquare,
@@ -65,10 +65,14 @@ export default function MyWorkPage() {
     startWorkSession,
     stopWorkSession,
     activeBreak,
+    todayNote,
+    setTodayNote,
   } = useWorkTrack();
   const { workSession, isWorkTimerRunning } = useWorkTrackWorkTimer();
 
   const [countdown, setCountdown] = useState(parseTime(workSession.nextUpdateDueIn || "00:22:18"));
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraMode, setCameraMode] = useState<"start" | "stop">("start");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -80,10 +84,18 @@ export default function MyWorkPage() {
   const completed = hourlyUpdates.filter((u) => u.status === "on_time").length;
 
   const actionHandlers: Record<string, () => void> = {
-    start: startWorkSession,
+    start: () => { setCameraMode("start"); setShowCamera(true); },
     break: openBreakModal,
     update: openHourlyUpdateModal,
-    stop: stopWorkSession,
+    stop: () => { setCameraMode("stop"); setShowCamera(true); },
+  };
+
+  const handleCameraCapture = async (photoUrl: string) => {
+    if (cameraMode === "start") {
+      await startWorkSession({ startPhotoUrl: photoUrl });
+    } else {
+      await stopWorkSession({ endPhotoUrl: photoUrl });
+    }
   };
 
   const actionDisabled: Record<string, boolean> = {
@@ -208,17 +220,24 @@ export default function MyWorkPage() {
           <div className="panel-card">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="panel-title mb-0">Today&apos;s Note</h3>
-              <button className="text-xs text-emerald-600 hover:underline">Edit Note</button>
             </div>
             <Textarea
-              defaultValue={todayNote.content}
-              className="min-h-[80px] resize-none text-sm"
-              readOnly
+              value={todayNote}
+              onChange={(e) => setTodayNote(e.target.value)}
+              className="min-h-[80px] resize-none text-sm bg-white/5 border-white/10 text-white"
+              placeholder="Write your focus for today..."
             />
-            <p className="mt-1.5 text-xs text-white/40">Created at {todayNote.createdAt}</p>
           </div>
         </div>
       </div>
+
+      {showCamera && (
+        <CameraCapture
+          label={cameraMode === "start" ? "Verify: Start Work" : "Verify: End Work"}
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
     </div>
   );
 }

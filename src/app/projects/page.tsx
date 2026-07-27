@@ -52,7 +52,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function ProjectsPage() {
-  const { projects, openProjectModal, deleteProject } = useWorkTrack();
+  const { projects, openProjectModal, deleteProject, canManageProjects } = useWorkTrack();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -81,8 +81,8 @@ export default function ProjectsPage() {
       <PageHeader
         title="Projects"
         subtitle="Manage and track all your projects."
-        actionLabel="New Project"
-        onActionClick={() => openProjectModal()}
+        actionLabel={canManageProjects ? "New Project" : undefined}
+        onActionClick={canManageProjects ? () => openProjectModal() : undefined}
         showClock
       />
 
@@ -101,6 +101,7 @@ export default function ProjectsPage() {
                 <TabsList variant="line" className="h-auto gap-2 p-0">
                   <TabsTrigger value="my-projects">All Projects ({projects.length})</TabsTrigger>
                 </TabsList>
+                {canManageProjects && (
                 <Button
                   onClick={() => openProjectModal()}
                   className="bg-emerald-950/90 text-emerald-300 border border-emerald-800/70 hover:bg-emerald-900 hover:border-emerald-700 shadow-[inset_0_-2px_0_0_#059669] text-xs gap-1 py-1 h-8 rounded-lg font-semibold"
@@ -108,6 +109,7 @@ export default function ProjectsPage() {
                   <Plus className="h-3.5 w-3.5" />
                   New Project
                 </Button>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-2 p-3">
