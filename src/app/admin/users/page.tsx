@@ -150,7 +150,11 @@ export default function AdminUsersPage() {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={form.departmentId} onValueChange={(v) => setForm({ ...form, departmentId: v ?? "" })}>
+                <Select
+                  value={form.departmentId || null}
+                  onValueChange={(v) => setForm({ ...form, departmentId: v ?? "" })}
+                  items={departments.map((d) => ({ value: d._id, label: d.name }))}
+                >
                   <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Department" /></SelectTrigger>
                   <SelectContent>
                     {departments.map((d) => <SelectItem key={d._id} value={d._id}>{d.name}</SelectItem>)}

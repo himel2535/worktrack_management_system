@@ -125,7 +125,11 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-white/70">Department (optional)</label>
-            <Select value={departmentId || undefined} onValueChange={(value) => setDepartmentId(value ?? "")}>
+            <Select
+              value={departmentId || null}
+              onValueChange={(value) => setDepartmentId(value ?? "")}
+              items={departments.map((d) => ({ value: d._id, label: d.name }))}
+            >
               <SelectTrigger className="w-full bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder={departmentsLoading ? "Loading departments..." : "Select department"} />
               </SelectTrigger>
